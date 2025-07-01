@@ -1,0 +1,77 @@
+<div class="umls-app">
+    <div id="modal-backdrop"></div>
+    <div id="cui-options-modal">
+        <h3>Select an action for <span id="selected-cui">CUI</span></h3>
+        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentCUI, 'atoms')">Atoms</button>
+        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentCUI, 'relations')">Relations</button>
+        <button class="umls-app__button"
+            onclick="fetchConceptDetails(modalCurrentCUI, 'definitions')">Definitions</button>
+        <hr>
+        <button class="umls-app__button" onclick="closeCuiOptionsModal()">Close</button>
+    </div>
+
+    <div class="umls-app__container two-column">
+        <!-- Left column: search + recent -->
+        <div class="column-left">
+            <label for="query" class="umls-app__label">Try a search:</label>
+            <input type="text" id="query" class="umls-app__input" placeholder="Enter a search term" required
+                autocomplete="off">
+
+            <label for="return-id-type" class="umls-app__label">Return ID Type</label>
+            <select id="return-id-type" class="umls-app__select">
+                <option value="concept">Concept (default)</option>
+                <option value="code">Code</option>
+            </select>
+
+            <div id="vocab-container" class="umls-app__vocab-container hidden">
+                <label class="umls-app__label">Vocabularies:</label>
+                <label><input type="checkbox" value="CPT"> CPT</label>
+                <label><input type="checkbox" value="ICD10CM"> ICD10CM</label>
+                <label><input type="checkbox" value="MSH"> MSH</label>
+                <label><input type="checkbox" value="RXNORM"> RXNORM</label>
+                <label><input type="checkbox" value="SNOMEDCT_US"> SNOMEDCT_US</label>
+            </div>
+
+            <button class="umls-app__button" onclick="searchUMLS()">Search</button>
+        </div>
+
+        <!-- Right column: API key + help -->
+        <div class="column-right">
+            <label for="api-key" class="umls-app__label">API Key</label>
+            <input type="password" id="api-key" class="umls-app__input" placeholder="Enter your UMLS API key"
+                value="ed8350de-bf3e-4a32-bcde-b37ff58eac60" required>
+            <p>Get your API key from <a href="https://uts.nlm.nih.gov/uts/profile" target="_blank">your UTS profile</a>.
+            </p>
+        </div>
+    </div>
+    <div class="umls-app__recent-request" id="recent-request">
+        <strong>Most Recent Request:</strong>
+        <pre id="recent-request-output">No requests made yet...</pre>
+    </div>
+
+
+    <!-- Results displayed full width below -->
+    <div class="umls-app__results" id="results">
+        <div class="umls-app__results-column">
+            <h3>Raw Data</h3>
+            <pre id="output">No results yet...</pre>
+        </div>
+        <div class="umls-app__results-column">
+            <h3>Information</h3>
+            <table id="info-table" class="umls-app__table">
+                <thead>
+                    <tr>
+                        <th>UI</th>
+                        <th>Name</th>
+                        <th id="root-source-header" style="display: none;">Root Source</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="3">No information yet...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
