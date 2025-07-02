@@ -1,3 +1,4 @@
+const DEFAULT_PAGE_SIZE = 200;
 let modalCurrentData = { ui: null, sab: null };
 
 async function searchUMLS() {
@@ -37,6 +38,7 @@ async function searchUMLS() {
   url.searchParams.append("string", searchString);
   url.searchParams.append("returnIdType", returnIdType);
   url.searchParams.append("apiKey", apiKey);
+  url.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
   if (selectedVocabularies.length > 0) {
     url.searchParams.append("sabs", selectedVocabularies.join(","));
   }
@@ -177,6 +179,7 @@ async function fetchConceptDetails(cui, detailType) {
   }
   const apiUrlObj = new URL(baseUrl);
   apiUrlObj.searchParams.append("apiKey", apiKey);
+  apiUrlObj.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
 
   const displayApiUrl = new URL(apiUrlObj);
   displayApiUrl.searchParams.set("apiKey", "***");
@@ -299,6 +302,7 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
   }
   let urlObj = new URL(apiUrl);
   urlObj.searchParams.append("apiKey", apiKey);
+  urlObj.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
 
   let displayUrlObj = new URL(urlObj);
   displayUrlObj.searchParams.set("apiKey", "***");
