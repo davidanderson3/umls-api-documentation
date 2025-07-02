@@ -12,26 +12,12 @@ table {
   border: 1px solid #f1f1f1;
 }
 
-.uts-soap-description {
-  padding: 30px;
-  margin: 10px 0px 20px 20px;
-  border: 1px solid #f1f1f1;
-}
-
 #uts-notice {
-  float: right;
-  width: 30%;
   border: 1px solid gray;
   border-radius: 5px;
   padding: 20px 20px 20px 20px;
-  margin: 10px 0px 20px 20px;
+  margin: 20px 0px 20px 0px;
   height: 95%;
-}
-
-@media screen and (max-width: 768px) {
-  #uts-notice {
-    display: none;
-  }
 }
 
 .uts-breadcrumbs {
@@ -66,4 +52,223 @@ pre {
   white-space: pre;
   margin: 1em 0;
   background-color: #f7f7f5 !important;
+}
+
+/* Scoped under the root .umls-app wrapper */
+
+.umls-app h1 {
+  text-align: center;
+}
+
+.umls-app {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.umls-app__form {
+  max-width: 400px;
+  margin: 0 auto;
+  display: grid;
+  gap: 0.5rem;
+  font-family: Arial, sans-serif;
+}
+
+.form-group {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+
+.form-group label {
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  font-size: 0.9em;
+  padding: 0.4em 0.6em;
+}
+
+.help-text {
+  font-size: 0.8em;
+  color: #555;
+  text-align: right;
+}
+
+.help-text a {
+  text-decoration: underline;
+}
+
+.umls-app__button {
+  padding: 0.6em;
+  font-size: 0.9em;
+  border: none;
+  border-radius: 4px;
+  background: #007bff;
+  color: #fff;
+  cursor: pointer;
+
+}
+
+.umls-app__button:hover {
+  background: #0056b3;
+}
+
+.umls-app__results {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+.umls-app__recent-request {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 1rem 0;
+  padding: 20px 20px 20px 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.umls-app__results pre {
+  margin: 0;
+  font-size: 0.9em;
+  white-space: pre-wrap;
+}
+
+.umls-app__results-column {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.umls-app__container.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 1rem;
+  padding: 20px 20px 20px 20px;
+  margin: 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+
+}
+
+.column-right {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Modal */
+#modal-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+}
+
+#cui-options-modal {
+  display: none;
+  position: fixed;
+  top: 25%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 2px solid #aaa;
+  padding: 20px;
+  z-index: 9999;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+#cui-options-modal h3 {
+  margin-top: 0;
+}
+
+#cui-options-modal .umls-app__button {
+  width: auto;
+  margin-right: 10px;
+}
+
+
+/* in your styles.css */
+.column-left {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+/* only inputs and selects go into col 2 */
+.column-left input,
+.column-left select {
+  grid-column: 2;
+}
+
+/* Search button spans full width below the grid */
+.column-left>.umls-app__button {
+  grid-column: 1 / -1;
+  margin-top: 1rem;
+  /* optional spacing */
+}
+
+
+/* keep the label in column 1 (this is the default) */
+.column-left label {
+  grid-column: 1;
+}
+
+/* === VOCABULARY GRID (put this at the very end of styles.css) === */
+#vocab-container {
+  grid-column: 1 / -1;
+  /* occupy both tracks in .column-left */
+
+  /* now reset its display for its own layout */
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+
+
+/* start hidden */
+#vocab-container.hidden {
+  display: none;
+}
+
+/* heading in its own row */
+#vocab-container>.umls-app__label {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+/* Every other label drops into column 2, one per row */
+#vocab-container>label:not(.umls-app__label) {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+/* Tidy up the checkbox itself */
+#vocab-container input[type="checkbox"] {
+  margin-right: 0.5rem;
 }
