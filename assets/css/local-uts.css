@@ -67,3 +67,40 @@ pre {
   margin: 1em 0;
   background-color: #f7f7f5 !important;
 }
+
+/* Layout styles for interactive demo */
+.umls-app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.umls-app__container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.column-left,
+.column-right {
+  flex: 1 1 300px;
+}
+
+.umls-app__results {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.umls-app__results-column {
+  flex: 1 1 300px;
+}
+
+@media screen and (max-width: 768px) {
+  .umls-app__container {
+    flex-direction: column;
+  }
+  .umls-app__results {
+    flex-direction: column;
+  }
+}
