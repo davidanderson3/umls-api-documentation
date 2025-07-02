@@ -1,6 +1,45 @@
 const DEFAULT_PAGE_SIZE = 200;
 let modalCurrentData = { ui: null, sab: null };
 
+// Parsed MRRANK data will be stored here
+let mrrankData = { bySab: {}, bySabTty: {} };
+
+// Load and parse the MRRANK.RRF ranking file
+async function loadMRRank() {
+  if (loadMRRank.loaded) return;
+  const response = await fetch('assets/MRRANK.RRF');
+  const text = await response.text();
+  text.split(/\n/).forEach(line => {
+    if (!line.trim()) return;
+    const [rankStr, sab, tty] = line.split('|');
+    const rank = parseInt(rankStr, 10);
+    if (!mrrankData.bySabTty[sab]) mrrankData.bySabTty[sab] = {};
+    mrrankData.bySabTty[sab][tty] = rank;
+    if (!mrrankData.bySab[sab] || rank > mrrankData.bySab[sab]) {
+      mrrankData.bySab[sab] = rank;
+    }
+  });
+  loadMRRank.loaded = true;
+}
+
+function getMRRank(sab, tty) {
+  if (!sab) return -1;
+  if (tty && mrrankData.bySabTty[sab] && mrrankData.bySabTty[sab][tty] !== undefined) {
+    return mrrankData.bySabTty[sab][tty];
+  }
+  if (mrrankData.bySab[sab] !== undefined) {
+    return mrrankData.bySab[sab];
+  }
+  return -1;
+}
+
+function sortByMRRank(arr, sabKey = 'rootSource', ttyKey = 'termType') {
+  if (!Array.isArray(arr)) return arr;
+  return arr
+    .slice()
+    .sort((a, b) => getMRRank(b[sabKey], b[ttyKey]) - getMRRank(a[sabKey], a[ttyKey]));
+}
+
 async function searchUMLS() {
   const apiKey = document.getElementById("api-key").value.trim();
   const searchString = document.getElementById("query").value.trim();
@@ -58,12 +97,14 @@ async function searchUMLS() {
     infoTableBody.innerHTML = "";
 
     const results = data.result && data.result.results ? data.result.results : [];
-    if (results.length === 0) {
+    await loadMRRank();
+    const sortedResults = sortByMRRank(results);
+    if (sortedResults.length === 0) {
       infoTableBody.innerHTML = '<tr><td colspan="3">No results found.</td></tr>';
       return;
     }
 
-    results.forEach(item => {
+    sortedResults.forEach(item => {
       const tr = document.createElement("tr");
 
       const uiTd = document.createElement("td");
@@ -218,13 +259,15 @@ async function fetchConceptDetails(cui, detailType) {
     }
 
     const detailArray = Array.isArray(data.result) ? data.result : [];
-    if (!Array.isArray(detailArray) || detailArray.length === 0) {
+    await loadMRRank();
+    const sortedDetails = sortByMRRank(detailArray);
+    if (!Array.isArray(sortedDetails) || sortedDetails.length === 0) {
       infoTableBody.innerHTML = `<tr><td colspan="3">No ${detailType} found for this ${cui}.</td></tr>`;
       return;
     }
 
     if (detailType === "atoms") {
-      detailArray.forEach((atom, index) => {
+      sortedDetails.forEach((atom, index) => {
         const tr = document.createElement("tr");
         const col1 = document.createElement("td");
         col1.textContent = atom.name || `(Atom #${index + 1})`;
@@ -235,7 +278,7 @@ async function fetchConceptDetails(cui, detailType) {
         infoTableBody.appendChild(tr);
       });
     } else if (detailType === "definitions") {
-      detailArray.forEach((definition, index) => {
+      sortedDetails.forEach((definition, index) => {
         const tr = document.createElement("tr");
         const col1 = document.createElement("td");
         col1.textContent = definition.value || `(Definition #${index + 1})`;
@@ -246,7 +289,7 @@ async function fetchConceptDetails(cui, detailType) {
         infoTableBody.appendChild(tr);
       });
     } else if (detailType === "relations") {
-      detailArray.forEach((relation) => {
+      sortedDetails.forEach((relation) => {
         const tr = document.createElement("tr");
 
         const col1 = document.createElement("td");
@@ -349,6 +392,9 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
 };
 
 window.addEventListener("DOMContentLoaded", function () {
+
+  // Preload MRRANK data for later sorting
+  loadMRRank();
 
   // Grab elements once DOM is ready
   const returnSelector = document.getElementById("return-id-type");
