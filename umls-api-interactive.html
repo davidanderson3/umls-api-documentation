@@ -1,11 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UMLS API Interactive</title>
+    <link rel="stylesheet" href="assets/css/local-uts.css">
+</head>
+<body>
 <div class="umls-app">
     <div id="modal-backdrop"></div>
     <div id="cui-options-modal">
         <h3>Select an action for <span id="selected-cui">CUI</span></h3>
         <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentCUI, 'atoms')">Atoms</button>
         <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentCUI, 'relations')">Relations</button>
-        <button class="umls-app__button"
-            onclick="fetchConceptDetails(modalCurrentCUI, 'definitions')">Definitions</button>
+        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentCUI, 'definitions')">Definitions</button>
         <hr>
         <button class="umls-app__button" onclick="closeCuiOptionsModal()">Close</button>
     </div>
@@ -75,3 +82,6 @@
         </div>
     </div>
 </div>
+<script src="assets/js/script.js"></script>
+</body>
+</html>
