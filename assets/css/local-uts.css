@@ -189,6 +189,10 @@ pre {
   display: none !important;
 }
 
+.raw-data-details {
+  margin-bottom: 1rem;
+}
+
 #cui-options-dropdown .umls-app__button {
   width: auto;
   margin-right: 10px;
