@@ -1,5 +1,5 @@
 const DEFAULT_PAGE_SIZE = 200;
-let modalCurrentData = { ui: null, sab: null };
+let modalCurrentData = { ui: null, sab: null, name: null, uri: null };
 
 // Parsed MRRANK data will be stored here
 let mrrankData = { bySab: {}, bySabTty: {} };
@@ -108,17 +108,18 @@ async function searchUMLS() {
       const tr = document.createElement("tr");
 
       const uiTd = document.createElement("td");
-      if (returnIdType === "concept") {
-        uiTd.style.color = "blue";
-        uiTd.style.textDecoration = "underline";
-        uiTd.style.cursor = "pointer";
-        uiTd.textContent = item.ui || "N/A";
-        uiTd.addEventListener("click", () => {
-          openCuiOptionsModal(item.ui);
-        });
-      } else {
-        uiTd.textContent = item.ui || "N/A";
-      }
+      uiTd.style.color = "blue";
+      uiTd.style.textDecoration = "underline";
+      uiTd.style.cursor = "pointer";
+      uiTd.textContent = item.ui || "N/A";
+      uiTd.addEventListener("click", () => {
+        openCuiOptionsModal(
+          item.ui,
+          returnIdType === "code" ? item.rootSource : null,
+          item.name,
+          returnIdType === "code" ? item.uri : null
+        );
+      });
       tr.appendChild(uiTd);
 
       const nameTd = document.createElement("td");
@@ -153,8 +154,10 @@ function colorizeUrl(urlObject) {
   }
   return colorized;
 }
-function openCuiOptionsModal(ui, sab) {
+function openCuiOptionsModal(ui, sab, name, uri) {
   modalCurrentData.ui = ui;
+  modalCurrentData.name = name || null;
+  modalCurrentData.uri = uri || null;
   if (sab) {
     modalCurrentData.sab = sab;
   } else {
@@ -185,7 +188,7 @@ function openCuiOptionsModal(ui, sab) {
 }
 
 function closeCuiOptionsModal() {
-  modalCurrentData = { ui: null, sab: null };
+  modalCurrentData = { ui: null, sab: null, name: null, uri: null };
   document.getElementById("selected-cui").textContent = "";
   document.getElementById("modal-backdrop").style.display = "none";
   document.getElementById("cui-options-modal").style.display = "none";
@@ -246,7 +249,7 @@ async function fetchConceptDetails(cui, detailType) {
     infoTableBody.innerHTML = "";
 
     if (detailType === "atoms") {
-      tableHead.innerHTML = `<tr><th>Atom</th><th>Root Source</th></tr>`;
+      tableHead.innerHTML = `<tr><th>Atom</th><th>Term Type</th><th>Root Source</th></tr>`;
     } else if (detailType === "definitions") {
       tableHead.innerHTML = `<tr><th>Definition</th><th>Root Source</th></tr>`;
     } else if (detailType === "relations") {
@@ -273,8 +276,11 @@ async function fetchConceptDetails(cui, detailType) {
         col1.textContent = atom.name || `(Atom #${index + 1})`;
         tr.appendChild(col1);
         const col2 = document.createElement("td");
-        col2.textContent = atom.rootSource || "(no rootSource)";
+        col2.textContent = atom.termType || "";
         tr.appendChild(col2);
+        const col3 = document.createElement("td");
+        col3.textContent = atom.rootSource || "(no rootSource)";
+        tr.appendChild(col3);
         infoTableBody.appendChild(tr);
       });
     } else if (detailType === "definitions") {
@@ -296,7 +302,7 @@ async function fetchConceptDetails(cui, detailType) {
         col1.style.color = "blue";
         col1.style.textDecoration = "underline";
         col1.style.cursor = "pointer";
-        col1.textContent = relation.relatedFromIdName || "(no relatedFromIdName)";
+        col1.textContent = relation.relatedFromIdName || modalCurrentData.name || "(no relatedFromIdName)";
         col1.addEventListener("click", function () {
           if (returnIdType === "code") {
             fetchRelatedDetail(relation.relatedFromId, "from", relation.rootSource);
@@ -307,7 +313,7 @@ async function fetchConceptDetails(cui, detailType) {
         tr.appendChild(col1);
 
         const col2 = document.createElement("td");
-        col2.textContent = relation.additionalRelationLabel || "(no relation label)";
+        col2.textContent = relation.additionalRelationLabel || "-";
         tr.appendChild(col2);
 
         const col3 = document.createElement("td");
