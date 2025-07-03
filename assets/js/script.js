@@ -69,7 +69,9 @@ async function searchUMLS() {
   tableHead.innerHTML = `<tr>
         <th>UI</th>
         <th>Name</th>
-        <th id="root-source-header" style="display: none;">Root Source</th>
+        <th id="root-source-header"${
+          returnIdType === "code" ? "" : " style=\"display: none;\""
+        }>Root Source</th>
     </tr>`;
   infoTableBody.innerHTML = '<tr><td colspan="3">No information yet...</td></tr>';
 
@@ -188,7 +190,6 @@ function openCuiOptionsModal(ui, sab, name, uri) {
 }
 
 function closeCuiOptionsModal() {
-  modalCurrentData = { ui: null, sab: null, name: null, uri: null };
   document.getElementById("selected-cui").textContent = "";
   document.getElementById("modal-backdrop").style.display = "none";
   document.getElementById("cui-options-modal").style.display = "none";
