@@ -177,36 +177,25 @@ pre {
   box-sizing: border-box;
 }
 
-/* Modal */
-#modal-backdrop {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 9998;
-}
-
-#cui-options-modal {
-  display: none;
-  position: fixed;
-  top: 25%;
-  left: 50%;
-  transform: translateX(-50%);
+/* Dropdown Menu */
+.dropdown {
+  position: absolute;
   background: #fff;
-  border: 2px solid #aaa;
-  padding: 20px;
-  z-index: 9999;
+  border: 1px solid #aaa;
+  padding: 10px;
+  z-index: 1000;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
 }
 
-#cui-options-modal h3 {
-  margin-top: 0;
+.dropdown.hidden {
+  display: none;
 }
 
-#cui-options-modal .umls-app__button {
+.hidden {
+  display: none !important;
+}
+
+#cui-options-dropdown .umls-app__button {
   width: auto;
   margin-right: 10px;
 }

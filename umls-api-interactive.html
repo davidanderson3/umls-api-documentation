@@ -8,14 +8,10 @@
 </head>
 <body>
 <div class="umls-app">
-    <div id="modal-backdrop"></div>
-    <div id="cui-options-modal">
-        <h3>Select an action for <span id="selected-cui">CUI</span></h3>
-        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentCUI, 'atoms')">Atoms</button>
-        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentCUI, 'relations')">Relations</button>
-        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentCUI, 'definitions')">Definitions</button>
-        <hr>
-        <button class="umls-app__button" onclick="closeCuiOptionsModal()">Close</button>
+    <div id="cui-options-dropdown" class="dropdown hidden">
+        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentData.ui, 'atoms'); closeDropdown();">Atoms</button>
+        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentData.ui, 'relations'); closeDropdown();">Relations</button>
+        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentData.ui, 'definitions'); closeDropdown();">Definitions</button>
     </div>
 
     <div class="umls-app__container two-column">

@@ -114,12 +114,13 @@ async function searchUMLS() {
       uiTd.style.textDecoration = "underline";
       uiTd.style.cursor = "pointer";
       uiTd.textContent = item.ui || "N/A";
-      uiTd.addEventListener("click", () => {
-        openCuiOptionsModal(
+      uiTd.addEventListener("click", (e) => {
+        openCuiOptionsDropdown(
           item.ui,
           returnIdType === "code" ? item.rootSource : null,
           item.name,
-          returnIdType === "code" ? item.uri : null
+          returnIdType === "code" ? item.uri : null,
+          e
         );
       });
       tr.appendChild(uiTd);
@@ -148,7 +149,7 @@ function colorizeUrl(urlObject) {
   const params = [];
   for (let [key, value] of urlObject.searchParams.entries()) {
     params.push(
-      `<span style="color:green">${encodeURIComponent(key)}</span>=<span style="color:red">${encodeURIComponent(value)}</span>`
+      `<span style="color:green">${encodeURIComponent(key)}</span>=<span style="color:red">${value}</span>`
     );
   }
   if (params.length > 0) {
@@ -156,7 +157,7 @@ function colorizeUrl(urlObject) {
   }
   return colorized;
 }
-function openCuiOptionsModal(ui, sab, name, uri) {
+function openCuiOptionsDropdown(ui, sab, name, uri, event) {
   modalCurrentData.ui = ui;
   modalCurrentData.name = name || null;
   modalCurrentData.uri = uri || null;
@@ -165,34 +166,30 @@ function openCuiOptionsModal(ui, sab, name, uri) {
   } else {
     modalCurrentData.sab = null;
   }
-  const returnIdType = document.getElementById("return-id-type").value;
-  const modalDiv = document.getElementById("cui-options-modal");
-  if (returnIdType === "concept") {
-    modalDiv.innerHTML = `
-        <h3>Select an action for <span id="selected-cui">${ui}</span></h3>
-        <button onclick="fetchConceptDetails(modalCurrentData.ui, 'atoms')">Atoms</button>
-        <button onclick="fetchConceptDetails(modalCurrentData.ui, 'relations')">Relations</button>
-        <button onclick="fetchConceptDetails(modalCurrentData.ui, 'definitions')">Definitions</button>
-        <hr>
-        <button onclick="closeCuiOptionsModal()">Close</button>
-      `;
-  } else if (returnIdType === "code") {
-    modalDiv.innerHTML = `
-        <h3>Select an action for <span id="selected-cui">${ui}</span></h3>
-        <button onclick="fetchConceptDetails(modalCurrentData.ui, 'atoms')">Atoms</button>
-        <button onclick="fetchConceptDetails(modalCurrentData.ui, 'relations')">Relations</button>
-        <hr>
-        <button onclick="closeCuiOptionsModal()">Close</button>
-      `;
-  }
-  document.getElementById("modal-backdrop").style.display = "block";
-  modalDiv.style.display = "block";
+  const dropdown = document.getElementById("cui-options-dropdown");
+  dropdown.style.left = event.pageX + "px";
+  dropdown.style.top = event.pageY + "px";
+  dropdown.classList.remove("hidden");
+  document.addEventListener(
+    "click",
+    function handleClickOutside(e) {
+      if (!dropdown.contains(e.target)) {
+        closeDropdown();
+      }
+    },
+    { once: true }
+  );
 }
 
-function closeCuiOptionsModal() {
-  document.getElementById("selected-cui").textContent = "";
-  document.getElementById("modal-backdrop").style.display = "none";
-  document.getElementById("cui-options-modal").style.display = "none";
+function closeDropdown() {
+  const dropdown = document.getElementById("cui-options-dropdown");
+  dropdown.classList.add("hidden");
+}
+
+function stripBaseUrl(fullUrl) {
+  if (!fullUrl) return "";
+  const parts = fullUrl.split("/");
+  return parts.length ? parts[parts.length - 1] : fullUrl;
 }
 
 function getSelectedVocabularies() {
@@ -209,7 +206,7 @@ async function fetchConceptDetails(cui, detailType) {
   const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
 
-  closeCuiOptionsModal();
+  closeDropdown();
 
   if (!apiKey) {
     alert("Please enter an API key first.");
@@ -448,11 +445,31 @@ window.addEventListener("DOMContentLoaded", function () {
   returnSelector.addEventListener("change", updateVocabVisibility);
   updateVocabVisibility();
 
-
-  function stripBaseUrl(fullUrl) {
-    if (!fullUrl) return "";
-    const parts = fullUrl.split("/");
-    return parts.length ? parts[parts.length - 1] : fullUrl;
+  if (searchString) {
+    searchUMLS();
   }
+
+  window.addEventListener("popstate", () => {
+    const popParams = new URLSearchParams(window.location.search);
+    const popSearch = popParams.get("string");
+    if (popSearch) {
+      document.getElementById("query").value = popSearch;
+      const popReturn = popParams.get("returnIdType");
+      if (popReturn) returnSelector.value = popReturn;
+      const popSabs = popParams.get("sabs");
+      document.querySelectorAll("#vocab-container input").forEach(cb => {
+        cb.checked = false;
+      });
+      if (popSabs) {
+        popSabs.split(",").forEach(v => {
+          const cb = document.querySelector(`#vocab-container input[value="${v}"]`);
+          if (cb) cb.checked = true;
+        });
+      }
+      updateVocabVisibility();
+      searchUMLS();
+    }
+  });
+
 
 });
