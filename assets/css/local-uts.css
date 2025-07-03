@@ -126,11 +126,12 @@ pre {
   background: #f9f9f9;
   border: 1px solid #ddd;
   border-radius: 4px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
   width: 100%;
   box-sizing: border-box;
+}
+
+.raw-data-details {
+  margin-bottom: 1rem;
 }
 
 
@@ -169,12 +170,14 @@ pre {
 
 .column-right {
   margin: 0;
-  padding: 0;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
   box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 /* Dropdown Menu */
@@ -207,6 +210,9 @@ pre {
   grid-template-columns: auto 1fr;
   align-items: center;
   gap: 0.5rem 1rem;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 /* only inputs and selects go into col 2 */
@@ -266,12 +272,8 @@ pre {
 }
 
 /* Responsive adjustments */
-@media (max-width: 600px) {
-  .umls-app__container.two-column {
-    grid-template-columns: 1fr;
+  @media (max-width: 600px) {
+    .umls-app__container.two-column {
+      grid-template-columns: 1fr;
+    }
   }
-
-  .umls-app__results {
-    grid-template-columns: 1fr;
-  }
-}

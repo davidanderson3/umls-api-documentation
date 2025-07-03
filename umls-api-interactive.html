@@ -56,27 +56,24 @@
 
     <!-- Results displayed full width below -->
     <div class="umls-app__results" id="results">
-        <div class="umls-app__results-column">
-            <h3>Raw Data</h3>
+        <details id="raw-data-details" class="raw-data-details">
+            <summary>Raw Data</summary>
             <pre id="output">No results yet...</pre>
-        </div>
-        <div class="umls-app__results-column">
-            <h3>Information</h3>
-            <table id="info-table" class="umls-app__table">
-                <thead>
-                    <tr>
-                        <th>UI</th>
-                        <th>Name</th>
-                        <th id="root-source-header" style="display: none;">Root Source</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="3">No information yet...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        </details>
+        <table id="info-table" class="umls-app__table">
+            <thead>
+                <tr>
+                    <th>UI</th>
+                    <th>Name</th>
+                    <th id="root-source-header" style="display: none;">Root Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3">No information yet...</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 <script src="assets/js/script.js"></script>
