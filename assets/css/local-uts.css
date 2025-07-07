@@ -215,9 +215,17 @@ pre {
   border-radius: 4px;
 }
 
-#cui-options-dropdown .umls-app__button {
-  width: auto;
-  margin-right: 10px;
+#cui-options-dropdown .dropdown-item {
+  display: block;
+  padding: 5px 10px;
+  margin: 2px 0;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+#cui-options-dropdown .dropdown-item:hover {
+  background-color: #f0f0f0;
 }
 
 
