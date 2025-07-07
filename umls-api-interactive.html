@@ -9,9 +9,9 @@
 <body>
 <div class="umls-app">
     <div id="cui-options-dropdown" class="dropdown hidden">
-        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentData.ui, 'atoms'); closeDropdown();">Atoms</button>
-        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentData.ui, 'relations'); closeDropdown();">Relations</button>
-        <button class="umls-app__button" onclick="fetchConceptDetails(modalCurrentData.ui, 'definitions'); closeDropdown();">Definitions</button>
+        <a href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'atoms'); closeDropdown(); return false;">Atoms</a>
+        <a href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'relations'); closeDropdown(); return false;">Relations</a>
+        <a href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'definitions'); closeDropdown(); return false;">Definitions</a>
     </div>
 
     <h1>UMLS API Interactive Documentation</h1>
