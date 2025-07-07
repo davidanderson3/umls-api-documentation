@@ -162,13 +162,26 @@ pre {
 .column-right {
   margin: 0;
   padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.5rem 1rem;
   width: 100%;
   box-sizing: border-box;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.column-right input {
+  grid-column: 2;
+}
+
+.column-right label {
+  grid-column: 1;
+}
+
+.column-right p {
+  grid-column: 1 / -1;
 }
 
 /* Dropdown Menu */

@@ -415,8 +415,9 @@ window.addEventListener("DOMContentLoaded", function () {
   const returnSelector = document.getElementById("return-id-type");
   const vocabContainer = document.getElementById("vocab-container");
   const rootSourceHeader = document.getElementById("root-source-header");
+  const queryInput = document.getElementById("query");
 
-  if (!returnSelector || !vocabContainer || !rootSourceHeader) return;
+  if (!returnSelector || !vocabContainer || !rootSourceHeader || !queryInput) return;
 
   // Read URL params (existing code)...
   const params = new URLSearchParams(window.location.search);
@@ -455,6 +456,13 @@ window.addEventListener("DOMContentLoaded", function () {
   // Wire up and initialize
   returnSelector.addEventListener("change", updateVocabVisibility);
   updateVocabVisibility();
+
+  queryInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      searchUMLS();
+    }
+  });
 
   if (searchString) {
     searchUMLS();
