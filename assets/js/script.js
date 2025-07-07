@@ -179,6 +179,15 @@ function openCuiOptionsDropdown(ui, sab, name, uri, event) {
     modalCurrentData.sab = null;
   }
   const dropdown = document.getElementById("cui-options-dropdown");
+  const definitionsBtn = document.getElementById("definitions-button");
+  const returnIdType = document.getElementById("return-id-type").value;
+  if (definitionsBtn) {
+    if (returnIdType === "code") {
+      definitionsBtn.classList.add("hidden");
+    } else {
+      definitionsBtn.classList.remove("hidden");
+    }
+  }
   const rect = event.currentTarget.getBoundingClientRect();
   dropdown.style.left = rect.left + window.pageXOffset + "px";
   dropdown.style.top = rect.bottom + window.pageYOffset + "px";
