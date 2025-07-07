@@ -472,6 +472,9 @@ window.addEventListener("DOMContentLoaded", function () {
   const rootSourceHeader = document.getElementById("root-source-header");
   const queryInput = document.getElementById("query");
   const definitionsOption = document.getElementById("definitions-option");
+  const parentsOption = document.getElementById("parents-option");
+  const childrenOption = document.getElementById("children-option");
+  const cuisOption = document.getElementById("cuis-option");
 
   if (!returnSelector || !vocabContainer || !rootSourceHeader || !queryInput) return;
 
@@ -504,10 +507,16 @@ window.addEventListener("DOMContentLoaded", function () {
       vocabContainer.classList.remove("hidden");
       rootSourceHeader.style.display = "";
       if (definitionsOption) definitionsOption.classList.add("hidden");
+      if (parentsOption) parentsOption.classList.remove("hidden");
+      if (childrenOption) childrenOption.classList.remove("hidden");
+      if (cuisOption) cuisOption.classList.remove("hidden");
     } else {
       vocabContainer.classList.add("hidden");
       rootSourceHeader.style.display = "none";
       if (definitionsOption) definitionsOption.classList.remove("hidden");
+      if (parentsOption) parentsOption.classList.add("hidden");
+      if (childrenOption) childrenOption.classList.add("hidden");
+      if (cuisOption) cuisOption.classList.add("hidden");
     }
   }
 
