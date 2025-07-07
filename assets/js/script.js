@@ -70,6 +70,7 @@ async function searchUMLS() {
 
   const resultsContainer = document.getElementById("output");
   const infoTableBody = document.querySelector("#info-table tbody");
+  const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
 
   resultsContainer.textContent = "Loading...";
@@ -90,6 +91,9 @@ async function searchUMLS() {
   if (selectedVocabularies.length > 0) {
     url.searchParams.append("sabs", selectedVocabularies.join(","));
   }
+  const displayUrl = new URL(url);
+  displayUrl.searchParams.set("apiKey", "***");
+  recentRequestContainer.innerHTML = colorizeUrl(displayUrl);
 
   try {
     const response = await fetch(url, {
@@ -147,6 +151,21 @@ async function searchUMLS() {
   }
 }
 
+function colorizeUrl(urlObject) {
+  const base = urlObject.origin + urlObject.pathname;
+  let colorized = `<span style="color:blue">${base}</span>`;
+  const params = [];
+  for (let [key, value] of urlObject.searchParams.entries()) {
+    params.push(
+      `<span style="color:green">${encodeURIComponent(key)}</span>=<span style="color:red">${encodeURIComponent(value)}</span>`
+    );
+  }
+  if (params.length > 0) {
+    colorized += `?${params.join("&")}`;
+  }
+  return colorized;
+}
+
 function openCuiOptionsDropdown(ui, sab, name, uri, event) {
   if (event) {
     event.stopPropagation();
@@ -196,6 +215,7 @@ async function fetchConceptDetails(cui, detailType) {
   const returnIdType = document.getElementById("return-id-type").value;
   const resultsContainer = document.getElementById("output");
   const infoTableBody = document.querySelector("#info-table tbody");
+  const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
 
   closeDropdown();
@@ -214,6 +234,10 @@ async function fetchConceptDetails(cui, detailType) {
   const apiUrlObj = new URL(baseUrl);
   apiUrlObj.searchParams.append("apiKey", apiKey);
   apiUrlObj.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
+
+  const displayApiUrl = new URL(apiUrlObj);
+  displayApiUrl.searchParams.set("apiKey", "***");
+  recentRequestContainer.innerHTML = colorizeUrl(displayApiUrl);
 
 
   const addressUrl = new URL(window.location.href);
@@ -338,6 +362,10 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
   let urlObj = new URL(apiUrl);
   urlObj.searchParams.append("apiKey", apiKey);
   urlObj.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
+
+  let displayUrlObj = new URL(urlObj);
+  displayUrlObj.searchParams.set("apiKey", "***");
+  document.getElementById("recent-request-output").innerHTML = colorizeUrl(displayUrlObj);
 
   const currentUrl = new URL(window.location.href);
   currentUrl.searchParams.set("related", relatedType);

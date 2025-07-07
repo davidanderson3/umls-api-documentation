@@ -193,6 +193,15 @@ pre {
   margin-bottom: 1rem;
 }
 
+.umls-app__recent-request {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 1rem 0;
+  padding: 20px 20px 20px 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
 #cui-options-dropdown .umls-app__button {
   width: auto;
   margin-right: 10px;
