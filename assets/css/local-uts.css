@@ -139,6 +139,7 @@ pre {
   margin: 0;
   font-size: 0.9em;
   white-space: pre-wrap;
+  padding: 4px;
 }
 
 .umls-app__results-column {
