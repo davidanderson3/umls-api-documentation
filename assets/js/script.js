@@ -420,18 +420,41 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
       ? data.result
       : data;
 
-    if (detailObj && typeof detailObj === "object") {
-      Object.keys(detailObj).forEach((key) => {
-        const tr = document.createElement("tr");
-        const tdKey = document.createElement("td");
-        tdKey.textContent = key;
-        const tdValue = document.createElement("td");
-        tdValue.textContent = JSON.stringify(detailObj[key]);
-        tr.appendChild(tdKey);
-        tr.appendChild(tdValue);
-        infoTableBody.appendChild(tr);
-      });
-    }
+  if (detailObj && typeof detailObj === "object") {
+    Object.keys(detailObj).forEach((key) => {
+      const value = detailObj[key];
+
+      // Exclude NONE values
+      if (typeof value === "string" && value.toUpperCase() === "NONE") {
+        return;
+      }
+
+      const tr = document.createElement("tr");
+      const tdKey = document.createElement("td");
+      tdKey.textContent = key;
+      const tdValue = document.createElement("td");
+
+      // Link URL values back into the app
+      if (typeof value === "string" && value.startsWith("http")) {
+        const link = document.createElement("a");
+        link.href = "#";
+        link.textContent = value;
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
+          fetchRelatedDetail(value, key.toLowerCase());
+        });
+        tdValue.appendChild(link);
+      } else if (typeof value === "string") {
+        tdValue.textContent = value;
+      } else {
+        tdValue.textContent = JSON.stringify(value, null, 2);
+      }
+
+      tr.appendChild(tdKey);
+      tr.appendChild(tdValue);
+      infoTableBody.appendChild(tr);
+    });
+  }
   } catch (error) {
     resultsContainer.textContent = `Error fetching related ${relatedType}: ${error}`;
     infoTableBody.innerHTML = `<tr><td colspan="2">Error loading related ${relatedType}.</td></tr>`;
