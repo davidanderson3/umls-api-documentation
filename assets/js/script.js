@@ -253,7 +253,7 @@ async function fetchConceptDetails(cui, detailType) {
   recentRequestContainer.innerHTML = colorizeUrl(displayApiUrl);
 
 
-  const addressUrl = new URL(window.location.href);
+  const addressUrl = new URL(window.location.pathname, window.location.origin);
   addressUrl.searchParams.set("endpoint", detailType);
   window.history.pushState({}, "", addressUrl.toString());
 
@@ -394,7 +394,7 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
   displayUrlObj.searchParams.set("apiKey", "***");
   document.getElementById("recent-request-output").innerHTML = colorizeUrl(displayUrlObj);
 
-  const currentUrl = new URL(window.location.href);
+  const currentUrl = new URL(window.location.pathname, window.location.origin);
   currentUrl.searchParams.set("related", relatedType);
   currentUrl.searchParams.set("relatedId", stripBaseUrl(apiUrl));
   window.history.pushState({}, "", currentUrl.toString());
