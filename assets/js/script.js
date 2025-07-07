@@ -417,6 +417,7 @@ window.addEventListener("DOMContentLoaded", function () {
   const vocabContainer = document.getElementById("vocab-container");
   const rootSourceHeader = document.getElementById("root-source-header");
   const queryInput = document.getElementById("query");
+  const definitionsOption = document.getElementById("definitions-option");
 
   if (!returnSelector || !vocabContainer || !rootSourceHeader || !queryInput) return;
 
@@ -448,9 +449,11 @@ window.addEventListener("DOMContentLoaded", function () {
     if (returnSelector.value === "code") {
       vocabContainer.classList.remove("hidden");
       rootSourceHeader.style.display = "";
+      if (definitionsOption) definitionsOption.classList.add("hidden");
     } else {
       vocabContainer.classList.add("hidden");
       rootSourceHeader.style.display = "none";
+      if (definitionsOption) definitionsOption.classList.remove("hidden");
     }
   }
 
