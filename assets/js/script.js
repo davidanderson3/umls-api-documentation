@@ -148,6 +148,9 @@ async function searchUMLS() {
 }
 
 function openCuiOptionsDropdown(ui, sab, name, uri, event) {
+  if (event) {
+    event.stopPropagation();
+  }
   modalCurrentData.ui = ui;
   modalCurrentData.name = name || null;
   modalCurrentData.uri = uri || null;
