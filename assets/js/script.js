@@ -2,16 +2,24 @@ const DEFAULT_PAGE_SIZE = 200;
 let modalCurrentData = { ui: null, sab: null, name: null, uri: null };
 
 // Parsed MRRANK data will be stored here
-let mrrankData = { bySab: {}, bySabTty: {} };
+let mrrankData =
+  typeof window !== "undefined" && window.preloadedMRRankData
+    ? window.preloadedMRRankData
+    : { bySab: {}, bySabTty: {} };
 
-// Load and parse the MRRANK.RRF ranking file
+// Initialize or fetch MRRANK data if not already loaded
 async function loadMRRank() {
   if (loadMRRank.loaded) return;
-  const response = await fetch('assets/MRRANK.RRF');
+  if (typeof window !== "undefined" && window.preloadedMRRankData) {
+    mrrankData = window.preloadedMRRankData;
+    loadMRRank.loaded = true;
+    return;
+  }
+  const response = await fetch("assets/MRRANK.RRF");
   const text = await response.text();
-  text.split(/\n/).forEach(line => {
+  text.split(/\n/).forEach((line) => {
     if (!line.trim()) return;
-    const [rankStr, sab, tty] = line.split('|');
+    const [rankStr, sab, tty] = line.split("|");
     const rank = parseInt(rankStr, 10);
     if (!mrrankData.bySabTty[sab]) mrrankData.bySabTty[sab] = {};
     mrrankData.bySabTty[sab][tty] = rank;
