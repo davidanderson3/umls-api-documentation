@@ -48,6 +48,18 @@ function sortByMRRank(arr, sabKey = 'rootSource', ttyKey = 'termType') {
     .sort((a, b) => getMRRank(b[sabKey], b[ttyKey]) - getMRRank(a[sabKey], a[ttyKey]));
 }
 
+// Sort array alphabetically by additionalRelationLabel
+function sortByAdditionalRelationLabel(arr) {
+  if (!Array.isArray(arr)) return arr;
+  return arr
+    .slice()
+    .sort((a, b) => {
+      const aLabel = a.additionalRelationLabel || '';
+      const bLabel = b.additionalRelationLabel || '';
+      return aLabel.localeCompare(bLabel, undefined, { sensitivity: 'base' });
+    });
+}
+
 async function searchUMLS() {
   const apiKey = document.getElementById("api-key").value.trim();
   const searchString = document.getElementById("query").value.trim();
@@ -277,7 +289,10 @@ async function fetchConceptDetails(cui, detailType) {
 
     const detailArray = Array.isArray(data.result) ? data.result : [];
     await loadMRRank();
-    const sortedDetails = sortByMRRank(detailArray);
+    let sortedDetails = sortByMRRank(detailArray);
+    if (detailType === "relations") {
+      sortedDetails = sortByAdditionalRelationLabel(sortedDetails);
+    }
     if (!Array.isArray(sortedDetails) || sortedDetails.length === 0) {
       const emptyColspan =
         detailType === "relations" ? 5 : detailType === "definitions" ? 2 : 3;
