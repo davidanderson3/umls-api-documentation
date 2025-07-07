@@ -160,8 +160,9 @@ function openCuiOptionsDropdown(ui, sab, name, uri, event) {
     modalCurrentData.sab = null;
   }
   const dropdown = document.getElementById("cui-options-dropdown");
-  dropdown.style.left = event.pageX + "px";
-  dropdown.style.top = event.pageY + "px";
+  const rect = event.currentTarget.getBoundingClientRect();
+  dropdown.style.left = rect.left + window.pageXOffset + "px";
+  dropdown.style.top = rect.bottom + window.pageYOffset + "px";
   dropdown.classList.remove("hidden");
   document.addEventListener(
     "click",
