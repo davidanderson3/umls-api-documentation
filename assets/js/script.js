@@ -246,7 +246,9 @@ async function fetchConceptDetails(cui, detailType) {
   window.history.pushState({}, "", addressUrl.toString());
 
   resultsContainer.textContent = `Loading ${detailType} for ${cui}...`;
-  infoTableBody.innerHTML = '<tr><td colspan="3">Loading...</td></tr>';
+  const loadingColspan =
+    detailType === "relations" ? 5 : detailType === "definitions" ? 2 : 3;
+  infoTableBody.innerHTML = `<tr><td colspan="${loadingColspan}">Loading...</td></tr>`;
 
   try {
     const response = await fetch(apiUrlObj, {
@@ -267,6 +269,7 @@ async function fetchConceptDetails(cui, detailType) {
       tableHead.innerHTML = `<tr>
           <th>From Name</th>
           <th>Relation Label</th>
+          <th>Additional Relation Label</th>
           <th>To Name</th>
           <th>Root Source</th>
         </tr>`;
@@ -276,7 +279,9 @@ async function fetchConceptDetails(cui, detailType) {
     await loadMRRank();
     const sortedDetails = sortByMRRank(detailArray);
     if (!Array.isArray(sortedDetails) || sortedDetails.length === 0) {
-      infoTableBody.innerHTML = `<tr><td colspan="3">No ${detailType} found for this ${cui}.</td></tr>`;
+      const emptyColspan =
+        detailType === "relations" ? 5 : detailType === "definitions" ? 2 : 3;
+      infoTableBody.innerHTML = `<tr><td colspan="${emptyColspan}">No ${detailType} found for this ${cui}.</td></tr>`;
       return;
     }
 
@@ -324,33 +329,39 @@ async function fetchConceptDetails(cui, detailType) {
         tr.appendChild(col1);
 
         const col2 = document.createElement("td");
-        col2.textContent = relation.additionalRelationLabel || "-";
+        col2.textContent = relation.relationLabel || "-";
         tr.appendChild(col2);
 
         const col3 = document.createElement("td");
-        col3.style.color = "blue";
-        col3.style.textDecoration = "underline";
-        col3.style.cursor = "pointer";
-        col3.textContent = relation.relatedIdName || "(no relatedIdName)";
-        col3.addEventListener("click", function () {
+        col3.textContent = relation.additionalRelationLabel || "-";
+        tr.appendChild(col3);
+
+        const col4 = document.createElement("td");
+        col4.style.color = "blue";
+        col4.style.textDecoration = "underline";
+        col4.style.cursor = "pointer";
+        col4.textContent = relation.relatedIdName || "(no relatedIdName)";
+        col4.addEventListener("click", function () {
           if (returnIdType === "code") {
             fetchRelatedDetail(relation.relatedId, "to", relation.rootSource);
           } else {
             fetchRelatedDetail(relation.relatedId, "to");
           }
         });
-        tr.appendChild(col3);
-
-        const col4 = document.createElement("td");
-        col4.textContent = relation.rootSource || "(no rootSource)";
         tr.appendChild(col4);
+
+        const col5 = document.createElement("td");
+        col5.textContent = relation.rootSource || "(no rootSource)";
+        tr.appendChild(col5);
 
         infoTableBody.appendChild(tr);
       });
     }
   } catch (error) {
     resultsContainer.textContent = `Error fetching ${detailType}: ${error}`;
-    infoTableBody.innerHTML = `<tr><td colspan="3">Error loading ${detailType}.</td></tr>`;
+    const errorColspan =
+      detailType === "relations" ? 5 : detailType === "definitions" ? 2 : 3;
+    infoTableBody.innerHTML = `<tr><td colspan="${errorColspan}">Error loading ${detailType}.</td></tr>`;
   }
 }
 
