@@ -389,17 +389,22 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
     const data = await response.json();
     resultsContainer.textContent = JSON.stringify(data, null, 2);
     infoTableBody.innerHTML = "";
-    if (typeof data === "object") {
-      for (let key in data) {
+
+    const detailObj = data && typeof data.result === "object" && !Array.isArray(data.result)
+      ? data.result
+      : data;
+
+    if (detailObj && typeof detailObj === "object") {
+      Object.keys(detailObj).forEach((key) => {
         const tr = document.createElement("tr");
         const tdKey = document.createElement("td");
         tdKey.textContent = key;
         const tdValue = document.createElement("td");
-        tdValue.textContent = JSON.stringify(data[key]);
+        tdValue.textContent = JSON.stringify(detailObj[key]);
         tr.appendChild(tdKey);
         tr.appendChild(tdValue);
         infoTableBody.appendChild(tr);
-      }
+      });
     }
   } catch (error) {
     resultsContainer.textContent = `Error fetching related ${relatedType}: ${error}`;
