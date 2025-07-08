@@ -193,7 +193,10 @@ function colorizeUrl(urlObject) {
 function updateLocationHash(urlObject) {
   if (!urlObject || !urlObject.pathname) return;
   const cleanPath = urlObject.pathname.replace(/^\/rest\/?/, "");
-  window.location.hash = cleanPath ? `#${cleanPath}` : "";
+  const newUrl = new URL(window.location.href);
+  newUrl.hash = cleanPath ? cleanPath : "";
+  // replaceState avoids triggering a popstate event, preventing recursion
+  history.replaceState(history.state, "", newUrl);
 }
 
 function updateDocLink(urlObject) {
