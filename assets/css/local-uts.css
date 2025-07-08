@@ -206,6 +206,11 @@ pre {
   font-size: 1.2em;
 }
 
+#results-heading {
+  margin: 0.5rem 0;
+  text-align: center;
+}
+
 .umls-app__recent-request {
   width: 100%;
   box-sizing: border-box;

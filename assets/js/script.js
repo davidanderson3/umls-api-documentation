@@ -94,6 +94,12 @@ async function renderSearchResults(data, returnIdType) {
   const resultsContainer = document.getElementById("output");
   const infoTableBody = document.querySelector("#info-table tbody");
   const tableHead = document.querySelector("#info-table thead");
+
+  const resultsHeading = document.getElementById("results-heading");
+  if (resultsHeading) {
+    resultsHeading.textContent = "";
+    resultsHeading.classList.add("hidden");
+  }
   const infoTable = document.getElementById("info-table");
   const noResultsMessage = document.getElementById("no-results-message");
 
@@ -159,6 +165,17 @@ async function searchUMLS(options = {}) {
   const selectedVocabularies =
     returnIdType === "code" ? getSelectedVocabularies() : [];
 
+  const resultsHeading = document.getElementById("results-heading");
+  if (resultsHeading) {
+    if (searchString) {
+      resultsHeading.textContent = `Results for "${searchString}"`;
+      resultsHeading.classList.remove("hidden");
+    } else {
+      resultsHeading.textContent = "";
+      resultsHeading.classList.add("hidden");
+    }
+  }
+
   if (!apiKey || !searchString) {
     alert("Please enter both an API key and a search term.");
     return;
@@ -186,6 +203,12 @@ async function searchUMLS(options = {}) {
   const infoTableBody = document.querySelector("#info-table tbody");
   const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
+
+  const resultsHeading = document.getElementById("results-heading");
+  if (resultsHeading) {
+    resultsHeading.textContent = "";
+    resultsHeading.classList.add("hidden");
+  }
   const infoTable = document.getElementById("info-table");
   const noResultsMessage = document.getElementById("no-results-message");
   renderConceptSummary(null);
@@ -418,6 +441,11 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
 
+  const resultsHeading = document.getElementById("results-heading");
+  if (resultsHeading) {
+    resultsHeading.textContent = "";
+    resultsHeading.classList.add("hidden");
+  }
 
   if (!apiKey) {
     alert("Please enter an API key first.");
@@ -682,6 +710,12 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
   const infoTableBody = document.querySelector("#info-table tbody");
   const tableHead = document.querySelector("#info-table thead");
 
+  const resultsHeading = document.getElementById("results-heading");
+  if (resultsHeading) {
+    resultsHeading.textContent = "";
+    resultsHeading.classList.add("hidden");
+  }
+
   resultsContainer.textContent = `Loading related ${relatedType} information...`;
   infoTableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
   tableHead.innerHTML = `<tr><th>Key</th><th>Value</th></tr>`;
@@ -758,6 +792,12 @@ async function fetchCuisForCode(code, sab) {
   const tableHead = document.querySelector("#info-table thead");
   const infoTable = document.getElementById("info-table");
   const noResultsMessage = document.getElementById("no-results-message");
+
+  const resultsHeading = document.getElementById("results-heading");
+  if (resultsHeading) {
+    resultsHeading.textContent = `Results for "${code}"`;
+    resultsHeading.classList.remove("hidden");
+  }
 
   const url = new URL("https://uts-ws.nlm.nih.gov/rest/search/current");
   url.searchParams.append("string", code);
