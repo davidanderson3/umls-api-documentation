@@ -66,6 +66,46 @@ function sortByAdditionalRelationLabel(arr) {
     });
 }
 
+function renderConceptSummary(concept) {
+  const summary = document.getElementById("concept-summary");
+  if (!summary) return;
+  if (!concept || typeof concept !== "object") {
+    summary.classList.add("hidden");
+    summary.innerHTML = "";
+    return;
+  }
+
+  summary.innerHTML = "";
+  const header = document.createElement("h2");
+  header.textContent = concept.name
+    ? `${concept.name} (${concept.ui || ""})`
+    : concept.ui || "";
+  summary.appendChild(header);
+
+  if (Array.isArray(concept.semanticTypes) && concept.semanticTypes.length) {
+    const p = document.createElement("p");
+    const types = concept.semanticTypes
+      .map((t) => t.name || t.abbrev || t)
+      .join(", ");
+    p.textContent = `Semantic Types: ${types}`;
+    summary.appendChild(p);
+  }
+
+  if (concept.atomCount !== undefined) {
+    const p = document.createElement("p");
+    p.textContent = `Atom Count: ${concept.atomCount}`;
+    summary.appendChild(p);
+  }
+
+  if (concept.relationCount !== undefined) {
+    const p = document.createElement("p");
+    p.textContent = `Relation Count: ${concept.relationCount}`;
+    summary.appendChild(p);
+  }
+
+  summary.classList.remove("hidden");
+}
+
 const searchCache = {};
 
 async function renderSearchResults(data, returnIdType) {
@@ -166,6 +206,7 @@ async function searchUMLS(options = {}) {
   const tableHead = document.querySelector("#info-table thead");
   const infoTable = document.getElementById("info-table");
   const noResultsMessage = document.getElementById("no-results-message");
+  renderConceptSummary(null);
 
   resultsContainer.textContent = "Loading...";
   tableHead.innerHTML = `<tr>
@@ -374,6 +415,9 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   resultsContainer.textContent = detailType
     ? `Loading ${detailType} for ${cui}...`
     : `Loading details for ${cui}...`;
+  if (detailType) {
+    renderConceptSummary(null);
+  }
   const loadingColspan = detailType === "relations" ? 5 : detailType === "definitions" ? 2 : detailType ? 3 : 2;
   infoTableBody.innerHTML = `<tr><td colspan="${loadingColspan}">Loading...</td></tr>`;
 
@@ -399,8 +443,12 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         : data;
       if (!detailObj || typeof detailObj !== "object") {
         infoTableBody.innerHTML = `<tr><td colspan="2">No details found for this ${cui}.</td></tr>`;
+        renderConceptSummary(null);
         return;
       }
+
+      renderConceptSummary(detailObj);
+
       Object.keys(detailObj).forEach(key => {
         const value = detailObj[key];
         if (typeof value === "string" && value.toUpperCase() === "NONE") return;

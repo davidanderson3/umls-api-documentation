@@ -194,6 +194,18 @@ pre {
   margin-bottom: 1rem;
 }
 
+.concept-summary {
+  margin: 1rem 0;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+}
+.concept-summary h2 {
+  margin-top: 0;
+  font-size: 1.2em;
+}
+
 .umls-app__recent-request {
   width: 100%;
   box-sizing: border-box;
