@@ -192,12 +192,29 @@ function colorizeUrl(urlObject) {
 function updateDocLink(urlObject) {
   const docLink = document.getElementById("recent-doc-link");
   if (!docLink || !urlObject) return;
-  const parts = urlObject.pathname.split("/");
-  const section = parts.length > 2 ? parts[2] : "";
-  let docUrl = "https://documentation.uts.nlm.nih.gov/rest/home.html";
-  if (section) {
-    docUrl = `https://documentation.uts.nlm.nih.gov/rest/${section}.html`;
+
+  const pathParts = urlObject.pathname.split("/").filter(Boolean);
+  if (pathParts.length < 2 || pathParts[0] !== "rest") {
+    docLink.href = "https://documentation.uts.nlm.nih.gov/rest/home.html";
+    return;
   }
+
+  const section = pathParts[1];
+  let docUrl = `https://documentation.uts.nlm.nih.gov/rest/${section}.html`;
+
+  const anchorTargets = [
+    "atoms",
+    "definitions",
+    "relations",
+    "parents",
+    "children",
+    "cuis"
+  ];
+  const last = pathParts[pathParts.length - 1];
+  if (anchorTargets.includes(last)) {
+    docUrl += `#${last}`;
+  }
+
   docLink.href = docUrl;
 }
 
