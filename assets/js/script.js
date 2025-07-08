@@ -238,6 +238,44 @@ function openCuiOptionsDropdown(ui, sab, name, uri, event) {
     modalCurrentData.sab = null;
   }
   const dropdown = document.getElementById("cui-options-dropdown");
+  const atomsLink = document.getElementById("atoms-option");
+  const relationsLink = document.getElementById("relations-option");
+  const definitionsLink = document.getElementById("definitions-option");
+  const parentsLink = document.getElementById("parents-option");
+  const childrenLink = document.getElementById("children-option");
+  const cuisLink = document.getElementById("cuis-option");
+  const apiKey = document.getElementById("api-key").value.trim();
+  const returnIdType = document.getElementById("return-id-type").value;
+
+  function buildDetailUrl(detailType) {
+    const url = new URL(window.location.pathname, window.location.origin);
+    if (apiKey) url.searchParams.set("apiKey", apiKey);
+    url.searchParams.set("detail", detailType);
+    url.searchParams.set("returnIdType", returnIdType);
+    if (returnIdType === "code") {
+      url.searchParams.set("code", stripBaseUrl(uri));
+      if (sab) url.searchParams.set("sab", sab);
+    } else {
+      url.searchParams.set("cui", ui);
+    }
+    return url.toString();
+  }
+
+  if (atomsLink) atomsLink.href = buildDetailUrl("atoms");
+  if (relationsLink) relationsLink.href = buildDetailUrl("relations");
+  if (definitionsLink) definitionsLink.href = buildDetailUrl("definitions");
+  if (parentsLink) parentsLink.href = buildDetailUrl("parents");
+  if (childrenLink) childrenLink.href = buildDetailUrl("children");
+  if (cuisLink) {
+    const url = new URL(window.location.pathname, window.location.origin);
+    if (apiKey) url.searchParams.set("apiKey", apiKey);
+    url.searchParams.set("string", ui);
+    url.searchParams.set("inputType", "sourceUi");
+    url.searchParams.set("searchType", "exact");
+    url.searchParams.set("returnIdType", "concept");
+    if (sab) url.searchParams.set("sabs", sab);
+    cuisLink.href = url.toString();
+  }
   const rect = event.currentTarget.getBoundingClientRect();
   dropdown.style.left = rect.left + window.pageXOffset + "px";
   dropdown.style.top = rect.bottom + window.pageYOffset + "px";
