@@ -1,5 +1,11 @@
 const DEFAULT_PAGE_SIZE = 200;
-let modalCurrentData = { ui: null, sab: null, name: null, uri: null };
+let modalCurrentData = {
+  ui: null,
+  sab: null,
+  name: null,
+  uri: null,
+  returnIdType: "concept"
+};
 
 // Parsed MRRANK data will be stored here
 let mrrankData =
@@ -237,8 +243,10 @@ function openCuiOptionsDropdown(ui, sab, name, uri, event) {
   modalCurrentData.uri = uri || null;
   if (sab) {
     modalCurrentData.sab = sab;
+    modalCurrentData.returnIdType = "code";
   } else {
     modalCurrentData.sab = null;
+    modalCurrentData.returnIdType = "concept";
   }
   const dropdown = document.getElementById("cui-options-dropdown");
   const atomsLink = document.getElementById("atoms-option");
@@ -248,7 +256,7 @@ function openCuiOptionsDropdown(ui, sab, name, uri, event) {
   const childrenLink = document.getElementById("children-option");
   const cuisLink = document.getElementById("cuis-option");
   const apiKey = document.getElementById("api-key").value.trim();
-  const returnIdType = document.getElementById("return-id-type").value;
+  const returnIdType = modalCurrentData.returnIdType;
 
   function buildDetailUrl(detailType) {
     const url = new URL(window.location.pathname, window.location.origin);
@@ -340,7 +348,8 @@ function getSelectedVocabularies() {
 
 async function fetchConceptDetails(cui, detailType) {
   const apiKey = document.getElementById("api-key").value.trim();
-  const returnIdType = document.getElementById("return-id-type").value;
+  const returnIdType = modalCurrentData.returnIdType ||
+    document.getElementById("return-id-type").value;
   const resultsContainer = document.getElementById("output");
   const infoTableBody = document.querySelector("#info-table tbody");
   const recentRequestContainer = document.getElementById("recent-request-output");
@@ -379,6 +388,7 @@ async function fetchConceptDetails(cui, detailType) {
   const addressUrl = new URL(window.location.pathname, window.location.origin);
   addressUrl.searchParams.set("detail", detailType);
   addressUrl.searchParams.set("apiKey", apiKey);
+  addressUrl.searchParams.set("returnIdType", returnIdType);
   if (returnIdType === "code") {
     addressUrl.searchParams.set("code", stripBaseUrl(modalCurrentData.uri));
     if (modalCurrentData.sab) {
@@ -593,11 +603,13 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
             modalCurrentData.sab = atomsMatch[1];
             modalCurrentData.ui = atomsMatch[2];
             modalCurrentData.uri = value.replace(/\/atoms$/, "");
+            modalCurrentData.returnIdType = "code";
             fetchConceptDetails(atomsMatch[2], "atoms");
           } else if (codeMatch) {
             modalCurrentData.sab = codeMatch[1];
             modalCurrentData.ui = codeMatch[2];
             modalCurrentData.uri = value;
+            modalCurrentData.returnIdType = "code";
             fetchConceptDetails(codeMatch[2], "atoms");
           } else {
             fetchRelatedDetail(value, key.toLowerCase());
@@ -766,10 +778,12 @@ window.addEventListener("DOMContentLoaded", function () {
         modalCurrentData.sab = sab;
         modalCurrentData.ui = code;
         modalCurrentData.uri = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${code}`;
+        modalCurrentData.returnIdType = "code";
       } else {
         modalCurrentData.sab = null;
         modalCurrentData.ui = cui;
         modalCurrentData.uri = null;
+        modalCurrentData.returnIdType = "concept";
       }
       fetchConceptDetails(code || cui, detail);
     } else if (related && relatedId) {
