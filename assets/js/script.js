@@ -82,26 +82,8 @@ function renderConceptSummary(concept) {
     : concept.ui || "";
   summary.appendChild(header);
 
-  if (Array.isArray(concept.semanticTypes) && concept.semanticTypes.length) {
-    const p = document.createElement("p");
-    const types = concept.semanticTypes
-      .map((t) => t.name || t.abbrev || t)
-      .join(", ");
-    p.textContent = `Semantic Types: ${types}`;
-    summary.appendChild(p);
-  }
-
-  if (concept.atomCount !== undefined) {
-    const p = document.createElement("p");
-    p.textContent = `Atom Count: ${concept.atomCount}`;
-    summary.appendChild(p);
-  }
-
-  if (concept.relationCount !== undefined) {
-    const p = document.createElement("p");
-    p.textContent = `Relation Count: ${concept.relationCount}`;
-    summary.appendChild(p);
-  }
+  // The detailed table already includes these values so we omit them from the
+  // summary to avoid repeating information.
 
   summary.classList.remove("hidden");
 }
