@@ -150,7 +150,6 @@ async function searchUMLS(options = {}) {
 
   const newUrl = new URL(window.location.pathname, window.location.origin);
   newUrl.searchParams.set("string", searchString);
-  newUrl.searchParams.set("apiKey", apiKey);
   if (returnIdType !== "concept") {
     newUrl.searchParams.set("returnIdType", returnIdType);
   }
@@ -357,12 +356,7 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   updateDocLink(apiUrlObj);
 
   const addressUrl = new URL(window.location.pathname, window.location.origin);
-  if (detailType) {
-    addressUrl.searchParams.set("detail", detailType);
-  } else {
-    addressUrl.searchParams.delete("detail");
-  }
-  addressUrl.searchParams.set("apiKey", apiKey);
+  addressUrl.searchParams.set("detail", detailType);
   addressUrl.searchParams.set("returnIdType", returnIdType);
   if (returnIdType === "code") {
     addressUrl.searchParams.set("code", stripBaseUrl(modalCurrentData.uri));
@@ -591,7 +585,6 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
   const currentUrl = new URL(window.location.pathname, window.location.origin);
   currentUrl.searchParams.set("related", relatedType);
   currentUrl.searchParams.set("relatedId", stripBaseUrl(apiUrl));
-  currentUrl.searchParams.set("apiKey", apiKey);
   if (rootSource) {
     currentUrl.searchParams.set("sab", rootSource);
   }
