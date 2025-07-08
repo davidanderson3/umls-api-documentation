@@ -485,7 +485,21 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
         link.textContent = value;
         link.addEventListener("click", function (e) {
           e.preventDefault();
-          fetchRelatedDetail(value, key.toLowerCase());
+          const atomsMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)\/atoms$/);
+          const codeMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)$/);
+          if (atomsMatch) {
+            modalCurrentData.sab = atomsMatch[1];
+            modalCurrentData.ui = atomsMatch[2];
+            modalCurrentData.uri = value.replace(/\/atoms$/, "");
+            fetchConceptDetails(atomsMatch[2], "atoms");
+          } else if (codeMatch) {
+            modalCurrentData.sab = codeMatch[1];
+            modalCurrentData.ui = codeMatch[2];
+            modalCurrentData.uri = value;
+            fetchConceptDetails(codeMatch[2], "atoms");
+          } else {
+            fetchRelatedDetail(value, key.toLowerCase());
+          }
         });
         tdValue.appendChild(link);
       } else if (typeof value === "string") {
