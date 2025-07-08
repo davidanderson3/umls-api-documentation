@@ -66,7 +66,66 @@ function sortByAdditionalRelationLabel(arr) {
     });
 }
 
-async function searchUMLS() {
+const searchCache = {};
+
+async function renderSearchResults(data, returnIdType) {
+  const resultsContainer = document.getElementById("output");
+  const infoTableBody = document.querySelector("#info-table tbody");
+  const tableHead = document.querySelector("#info-table thead");
+  const infoTable = document.getElementById("info-table");
+  const noResultsMessage = document.getElementById("no-results-message");
+
+  resultsContainer.textContent = JSON.stringify(data, null, 2);
+  infoTableBody.innerHTML = "";
+
+  const results = data.result && data.result.results ? data.result.results : [];
+  await loadMRRank();
+  const sortedResults = sortByMRRank(results);
+
+  if (sortedResults.length === 0) {
+    if (infoTable) infoTable.style.display = "none";
+    if (noResultsMessage) noResultsMessage.classList.remove("hidden");
+    return;
+  }
+
+  if (infoTable) infoTable.style.display = "";
+  if (noResultsMessage) noResultsMessage.classList.add("hidden");
+
+  sortedResults.forEach(item => {
+    const tr = document.createElement("tr");
+
+    const uiTd = document.createElement("td");
+    uiTd.style.color = "blue";
+    uiTd.style.textDecoration = "underline";
+    uiTd.style.cursor = "pointer";
+    uiTd.textContent = item.ui || "N/A";
+    uiTd.addEventListener("click", (e) => {
+      openCuiOptionsDropdown(
+        item.ui,
+        returnIdType === "code" ? item.rootSource : null,
+        item.name,
+        returnIdType === "code" ? item.uri : null,
+        e
+      );
+    });
+    tr.appendChild(uiTd);
+
+    const nameTd = document.createElement("td");
+    nameTd.textContent = item.name || "N/A";
+    tr.appendChild(nameTd);
+
+    const rootSourceHeader = document.getElementById("root-source-header");
+    if (rootSourceHeader.style.display !== "none") {
+      const rootSourceTd = document.createElement("td");
+      rootSourceTd.textContent = item.rootSource || "N/A";
+      tr.appendChild(rootSourceTd);
+    }
+    infoTableBody.appendChild(tr);
+  });
+}
+
+async function searchUMLS(options = {}) {
+  const { skipPushState = false, useCache = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   const searchString = document.getElementById("query").value.trim();
   const returnIdType = document.getElementById("return-id-type").value;
@@ -78,6 +137,12 @@ async function searchUMLS() {
     return;
   }
 
+  const cacheKey = JSON.stringify({
+    q: searchString,
+    idType: returnIdType,
+    sabs: selectedVocabularies.join(",")
+  });
+
   const newUrl = new URL(window.location.pathname, window.location.origin);
   newUrl.searchParams.set("string", searchString);
   newUrl.searchParams.set("apiKey", apiKey);
@@ -87,7 +152,9 @@ async function searchUMLS() {
   if (selectedVocabularies.length > 0) {
     newUrl.searchParams.set("sabs", selectedVocabularies.join(","));
   }
-  window.history.pushState({}, "", newUrl.toString());
+  if (!skipPushState) {
+    window.history.pushState({}, "", newUrl.toString());
+  }
 
   const resultsContainer = document.getElementById("output");
   const infoTableBody = document.querySelector("#info-table tbody");
@@ -116,11 +183,17 @@ async function searchUMLS() {
   if (selectedVocabularies.length > 0) {
     url.searchParams.append("sabs", selectedVocabularies.join(","));
   }
+
   const displayUrl = new URL(url);
   displayUrl.searchParams.set("apiKey", "***");
   recentRequestContainer.innerHTML = colorizeUrl(displayUrl);
   updateDocLink(url);
   updateLocationHash(url);
+
+  if (useCache && searchCache[cacheKey]) {
+    await renderSearchResults(searchCache[cacheKey], returnIdType);
+    return;
+  }
 
   try {
     const response = await fetch(url, {
@@ -128,53 +201,8 @@ async function searchUMLS() {
       headers: { Accept: "application/json" }
     });
     const data = await response.json();
-
-    resultsContainer.textContent = JSON.stringify(data, null, 2);
-
-    infoTableBody.innerHTML = "";
-
-    const results = data.result && data.result.results ? data.result.results : [];
-    await loadMRRank();
-    const sortedResults = sortByMRRank(results);
-    if (sortedResults.length === 0) {
-      if (infoTable) infoTable.style.display = "none";
-      if (noResultsMessage) noResultsMessage.classList.remove("hidden");
-      return;
-    }
-    if (infoTable) infoTable.style.display = "";
-    if (noResultsMessage) noResultsMessage.classList.add("hidden");
-
-    sortedResults.forEach(item => {
-      const tr = document.createElement("tr");
-
-      const uiTd = document.createElement("td");
-      uiTd.style.color = "blue";
-      uiTd.style.textDecoration = "underline";
-      uiTd.style.cursor = "pointer";
-      uiTd.textContent = item.ui || "N/A";
-      uiTd.addEventListener("click", (e) => {
-        openCuiOptionsDropdown(
-          item.ui,
-          returnIdType === "code" ? item.rootSource : null,
-          item.name,
-          returnIdType === "code" ? item.uri : null,
-          e
-        );
-      });
-      tr.appendChild(uiTd);
-
-      const nameTd = document.createElement("td");
-      nameTd.textContent = item.name || "N/A";
-      tr.appendChild(nameTd);
-
-      const rootSourceHeader = document.getElementById("root-source-header");
-      if (rootSourceHeader.style.display !== "none") {
-        const rootSourceTd = document.createElement("td");
-        rootSourceTd.textContent = item.rootSource || "N/A";
-        tr.appendChild(rootSourceTd);
-      }
-      infoTableBody.appendChild(tr);
-    });
+    searchCache[cacheKey] = data;
+    await renderSearchResults(data, returnIdType);
   } catch (error) {
     resultsContainer.textContent = "Error fetching data: " + error;
     infoTableBody.innerHTML = '<tr><td colspan="3">Error loading data.</td></tr>';
@@ -346,7 +374,8 @@ function getSelectedVocabularies() {
   );
 }
 
-async function fetchConceptDetails(cui, detailType) {
+async function fetchConceptDetails(cui, detailType, options = {}) {
+  const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   const returnIdType = modalCurrentData.returnIdType ||
     document.getElementById("return-id-type").value;
@@ -382,8 +411,6 @@ async function fetchConceptDetails(cui, detailType) {
   displayApiUrl.searchParams.set("apiKey", "***");
   recentRequestContainer.innerHTML = colorizeUrl(displayApiUrl);
   updateDocLink(apiUrlObj);
-  updateLocationHash(apiUrlObj);
-
 
   const addressUrl = new URL(window.location.pathname, window.location.origin);
   addressUrl.searchParams.set("detail", detailType);
@@ -397,7 +424,10 @@ async function fetchConceptDetails(cui, detailType) {
   } else {
     addressUrl.searchParams.set("cui", cui);
   }
-  window.history.pushState({}, "", addressUrl.toString());
+  if (!skipPushState) {
+    window.history.pushState({}, "", addressUrl.toString());
+  }
+  updateLocationHash(apiUrlObj);
 
   resultsContainer.textContent = `Loading ${detailType} for ${cui}...`;
   const loadingColspan =
@@ -526,7 +556,8 @@ async function fetchConceptDetails(cui, detailType) {
   }
 }
 
-async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
+async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {}) {
+  const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   if (!apiKey) {
     alert("Please enter an API key first.");
@@ -540,7 +571,6 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
   displayUrlObj.searchParams.set("apiKey", "***");
   document.getElementById("recent-request-output").innerHTML = colorizeUrl(displayUrlObj);
   updateDocLink(urlObj);
-  updateLocationHash(urlObj);
 
   const currentUrl = new URL(window.location.pathname, window.location.origin);
   currentUrl.searchParams.set("related", relatedType);
@@ -549,7 +579,10 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
   if (rootSource) {
     currentUrl.searchParams.set("sab", rootSource);
   }
-  window.history.pushState({}, "", currentUrl.toString());
+  if (!skipPushState) {
+    window.history.pushState({}, "", currentUrl.toString());
+  }
+  updateLocationHash(urlObj);
 
   const resultsContainer = document.getElementById("output");
   const infoTableBody = document.querySelector("#info-table tbody");
@@ -736,7 +769,7 @@ window.addEventListener("DOMContentLoaded", function () {
   if (!returnSelector || !vocabContainer || !rootSourceHeader || !queryInput) return;
 
   // Read URL params (existing code)...
-  function applyUrlParams() {
+  function applyUrlParams(fromPopState = false) {
     const params = new URLSearchParams(window.location.search);
     const hashParams = parseHash();
     const apiKey = params.get("apiKey");
@@ -785,7 +818,7 @@ window.addEventListener("DOMContentLoaded", function () {
         modalCurrentData.uri = null;
         modalCurrentData.returnIdType = "concept";
       }
-      fetchConceptDetails(code || cui, detail);
+      fetchConceptDetails(code || cui, detail, { skipPushState: fromPopState });
     } else if (related && relatedId) {
       let fullUrl;
       if (sab) {
@@ -793,10 +826,10 @@ window.addEventListener("DOMContentLoaded", function () {
       } else {
         fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${relatedId}`;
       }
-      fetchRelatedDetail(fullUrl, related, sab);
+      fetchRelatedDetail(fullUrl, related, sab, { skipPushState: fromPopState });
     } else if (searchString) {
-      searchUMLS();
-    }
+      searchUMLS({ skipPushState: fromPopState, useCache: fromPopState });
+  }
   }
 
   // Helper to toggle visibility
@@ -831,7 +864,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
   applyUrlParams();
 
-  window.addEventListener("popstate", applyUrlParams);
+  window.addEventListener("popstate", () => applyUrlParams(true));
 
 
 });
