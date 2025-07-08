@@ -244,7 +244,8 @@ function updateDocLink(urlObject) {
   }
 
   const section = pathParts[1];
-  let docUrl = `https://documentation.uts.nlm.nih.gov/rest/${section}.html`;
+  const docSection = section === "content" ? "concept" : section;
+  let docUrl = `https://documentation.uts.nlm.nih.gov/rest/${docSection}/index.html`;
 
   const anchorTargets = [
     "atoms",
