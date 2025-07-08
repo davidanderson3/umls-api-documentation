@@ -517,6 +517,10 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         infoTableBody.appendChild(tr);
       });
 
+      // For overview details we don't render the list-style rows below,
+      // so stop processing after the key/value pairs have been added.
+      return;
+
     } else if (detailType === "atoms") {
       tableHead.innerHTML = `<tr><th>Atom</th><th>Term Type</th><th>Root Source</th></tr>`;
     } else if (detailType === "definitions") {
