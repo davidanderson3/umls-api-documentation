@@ -251,6 +251,7 @@ function openCuiOptionsDropdown(ui, sab, name, uri, event) {
     const url = new URL(window.location.pathname, window.location.origin);
     if (apiKey) url.searchParams.set("apiKey", apiKey);
     url.searchParams.set("detail", detailType);
+    url.searchParams.set("returnIdType", returnIdType);
     if (returnIdType === "code") {
       url.searchParams.set("code", stripBaseUrl(uri));
       if (sab) url.searchParams.set("sab", sab);
