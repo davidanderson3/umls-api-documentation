@@ -84,6 +84,8 @@ async function searchUMLS() {
   const infoTableBody = document.querySelector("#info-table tbody");
   const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
+  const infoTable = document.getElementById("info-table");
+  const noResultsMessage = document.getElementById("no-results-message");
 
   resultsContainer.textContent = "Loading...";
   tableHead.innerHTML = `<tr>
@@ -94,6 +96,8 @@ async function searchUMLS() {
         }>Root Source</th>
     </tr>`;
   infoTableBody.innerHTML = '<tr><td colspan="3">No information yet...</td></tr>';
+  if (infoTable) infoTable.style.display = "";
+  if (noResultsMessage) noResultsMessage.classList.add("hidden");
 
   const url = new URL("https://uts-ws.nlm.nih.gov/rest/search/current");
   url.searchParams.append("string", searchString);
@@ -122,9 +126,12 @@ async function searchUMLS() {
     await loadMRRank();
     const sortedResults = sortByMRRank(results);
     if (sortedResults.length === 0) {
-      infoTableBody.innerHTML = '<tr><td colspan="3">No results found.</td></tr>';
+      if (infoTable) infoTable.style.display = "none";
+      if (noResultsMessage) noResultsMessage.classList.remove("hidden");
       return;
     }
+    if (infoTable) infoTable.style.display = "";
+    if (noResultsMessage) noResultsMessage.classList.add("hidden");
 
     sortedResults.forEach(item => {
       const tr = document.createElement("tr");
