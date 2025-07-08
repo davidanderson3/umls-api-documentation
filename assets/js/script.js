@@ -364,6 +364,10 @@ function parseUmlsUrl(url) {
     if (m) {
       return { type: "code", sab: m[1], code: m[2], detail: m[3] || "" };
     }
+    m = u.pathname.match(/\/search\/([^/]+)\/?$/);
+    if (m) {
+      return { type: "search", release: m[1], params: u.searchParams };
+    }
   } catch (e) {
     // ignore invalid URLs
   }
@@ -389,6 +393,27 @@ function navigateToUmlsUrl(url, key) {
       modalCurrentData.uri = null;
       modalCurrentData.returnIdType = "concept";
       fetchConceptDetails(parsed.cui, parsed.detail || key.toLowerCase());
+    } else if (parsed.type === "search") {
+      const queryInput = document.getElementById("query");
+      const returnSelector = document.getElementById("return-id-type");
+      if (queryInput) queryInput.value = parsed.params.get("string") || "";
+      if (returnSelector && parsed.params.get("returnIdType")) {
+        returnSelector.value = parsed.params.get("returnIdType");
+      }
+      document.querySelectorAll("#vocab-container input").forEach(cb => {
+        cb.checked = false;
+      });
+      const sabs = parsed.params.get("sabs");
+      if (sabs) {
+        sabs.split(",").forEach(v => {
+          const cb = document.querySelector(`#vocab-container input[value="${v}"]`);
+          if (cb) cb.checked = true;
+        });
+      }
+      if (typeof window.updateVocabVisibility === "function") {
+        window.updateVocabVisibility();
+      }
+      searchUMLS();
     }
   } else {
     fetchRelatedDetail(url, key.toLowerCase());
@@ -940,6 +965,7 @@ window.addEventListener("DOMContentLoaded", function () {
       if (cuisOption) cuisOption.classList.add("hidden");
     }
   }
+  window.updateVocabVisibility = updateVocabVisibility;
 
   // Wire up and initialize
   returnSelector.addEventListener("change", updateVocabVisibility);
