@@ -353,6 +353,48 @@ function parseHash() {
   return result;
 }
 
+function parseUmlsUrl(url) {
+  try {
+    const u = new URL(url, window.location.href);
+    let m = u.pathname.match(/\/content\/[^/]+\/CUI\/([^/]+)(?:\/(.+))?$/);
+    if (m) {
+      return { type: "concept", cui: m[1], detail: m[2] || "" };
+    }
+    m = u.pathname.match(/\/content\/[^/]+\/source\/([^/]+)\/([^/]+)(?:\/(.+))?$/);
+    if (m) {
+      return { type: "code", sab: m[1], code: m[2], detail: m[3] || "" };
+    }
+  } catch (e) {
+    // ignore invalid URLs
+  }
+  return null;
+}
+
+function navigateToUmlsUrl(url, key) {
+  const parsed = parseUmlsUrl(url);
+  if (parsed) {
+    if (parsed.type === "code") {
+      modalCurrentData.sab = parsed.sab;
+      modalCurrentData.ui = parsed.code;
+      const baseParts = url.split("/");
+      if (parsed.detail) {
+        baseParts.splice(-parsed.detail.split("/").length, parsed.detail.split("/").length);
+      }
+      modalCurrentData.uri = baseParts.join("/");
+      modalCurrentData.returnIdType = "code";
+      fetchConceptDetails(parsed.code, parsed.detail || key.toLowerCase());
+    } else {
+      modalCurrentData.sab = null;
+      modalCurrentData.ui = parsed.cui;
+      modalCurrentData.uri = null;
+      modalCurrentData.returnIdType = "concept";
+      fetchConceptDetails(parsed.cui, parsed.detail || key.toLowerCase());
+    }
+  } else {
+    fetchRelatedDetail(url, key.toLowerCase());
+  }
+}
+
 function getSelectedVocabularies() {
   return Array.from(document.querySelectorAll("#vocab-container input:checked")).map(
     checkbox => checkbox.value
@@ -462,23 +504,7 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
           link.textContent = value;
           link.addEventListener("click", function (e) {
             e.preventDefault();
-            const atomsMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)\/atoms$/);
-            const codeMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)$/);
-            if (atomsMatch) {
-              modalCurrentData.sab = atomsMatch[1];
-              modalCurrentData.ui = atomsMatch[2];
-              modalCurrentData.uri = value.replace(/\/atoms$/, "");
-              modalCurrentData.returnIdType = "code";
-              fetchConceptDetails(atomsMatch[2], "");
-            } else if (codeMatch) {
-              modalCurrentData.sab = codeMatch[1];
-              modalCurrentData.ui = codeMatch[2];
-              modalCurrentData.uri = value;
-              modalCurrentData.returnIdType = "code";
-              fetchConceptDetails(codeMatch[2], "");
-            } else {
-              fetchRelatedDetail(value, key.toLowerCase());
-            }
+            navigateToUmlsUrl(value, key);
           });
           tdValue.appendChild(link);
         } else if (typeof value === "string") {
@@ -687,23 +713,7 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
         link.textContent = value;
         link.addEventListener("click", function (e) {
           e.preventDefault();
-          const atomsMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)\/atoms$/);
-          const codeMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)$/);
-          if (atomsMatch) {
-            modalCurrentData.sab = atomsMatch[1];
-            modalCurrentData.ui = atomsMatch[2];
-            modalCurrentData.uri = value.replace(/\/atoms$/, "");
-            modalCurrentData.returnIdType = "code";
-            fetchConceptDetails(atomsMatch[2], "");
-          } else if (codeMatch) {
-            modalCurrentData.sab = codeMatch[1];
-            modalCurrentData.ui = codeMatch[2];
-            modalCurrentData.uri = value;
-            modalCurrentData.returnIdType = "code";
-            fetchConceptDetails(codeMatch[2], "");
-          } else {
-            fetchRelatedDetail(value, key.toLowerCase());
-          }
+          navigateToUmlsUrl(value, key);
         });
         tdValue.appendChild(link);
       } else if (typeof value === "string") {
