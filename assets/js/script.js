@@ -412,11 +412,11 @@ async function fetchConceptDetails(cui, detailType) {
       tableHead.innerHTML = `<tr><th>Definition</th><th>Root Source</th></tr>`;
     } else if (detailType === "relations") {
       tableHead.innerHTML = `<tr>
-          <th>From Name</th>
-          <th>Relation Label</th>
-          <th>Additional Relation Label</th>
-          <th>To Name</th>
-          <th>Root Source</th>
+          <th>Source Concept</th>
+          <th>Relation</th>
+          <th>Additional Info</th>
+          <th>Target Concept</th>
+          <th>Vocabulary</th>
         </tr>`;
     }
 
@@ -702,7 +702,7 @@ async function fetchCuisForCode(code, sab) {
   }
 }
 
-window.addEventListener("DOMContentLoaded", function () {
+function initializeApp() {
 
   // Preload MRRANK data for later sorting
   loadMRRank();
@@ -815,6 +815,10 @@ window.addEventListener("DOMContentLoaded", function () {
   applyUrlParams();
 
   window.addEventListener("popstate", applyUrlParams);
+}
 
-
-});
+if (document.readyState === "loading") {
+  window.addEventListener("DOMContentLoaded", initializeApp);
+} else {
+  initializeApp();
+}
