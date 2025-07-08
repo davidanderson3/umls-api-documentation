@@ -185,20 +185,7 @@ pre {
   grid-column: 1 / -1;
 }
 
-/* Dropdown Menu */
-.dropdown {
-  position: absolute;
-  background: #fff;
-  border: 1px solid #aaa;
-  padding: 10px;
-  z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-}
-
-.dropdown.hidden {
-  display: none;
-}
-
+/* Utility classes */
 .hidden {
   display: none !important;
 }
@@ -216,18 +203,6 @@ pre {
   border-radius: 4px;
 }
 
-#cui-options-dropdown .dropdown-item {
-  display: block;
-  padding: 5px 10px;
-  margin: 2px 0;
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-}
-
-#cui-options-dropdown .dropdown-item:hover {
-  background-color: #f0f0f0;
-}
 
 
 /* in your styles.css */

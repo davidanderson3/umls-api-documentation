@@ -99,14 +99,19 @@ async function renderSearchResults(data, returnIdType) {
     uiTd.style.textDecoration = "underline";
     uiTd.style.cursor = "pointer";
     uiTd.textContent = item.ui || "N/A";
-    uiTd.addEventListener("click", (e) => {
-      openCuiOptionsDropdown(
-        item.ui,
-        returnIdType === "code" ? item.rootSource : null,
-        item.name,
-        returnIdType === "code" ? item.uri : null,
-        e
-      );
+    uiTd.addEventListener("click", () => {
+      modalCurrentData.ui = item.ui;
+      modalCurrentData.name = item.name || null;
+      if (returnIdType === "code") {
+        modalCurrentData.sab = item.rootSource;
+        modalCurrentData.uri = item.uri || null;
+        modalCurrentData.returnIdType = "code";
+      } else {
+        modalCurrentData.sab = null;
+        modalCurrentData.uri = null;
+        modalCurrentData.returnIdType = "concept";
+      }
+      fetchConceptDetails(item.ui, "atoms");
     });
     tr.appendChild(uiTd);
 
@@ -263,80 +268,6 @@ function updateDocLink(urlObject) {
   docLink.href = docUrl;
 }
 
-function openCuiOptionsDropdown(ui, sab, name, uri, event) {
-  if (event) {
-    event.stopPropagation();
-  }
-  modalCurrentData.ui = ui;
-  modalCurrentData.name = name || null;
-  modalCurrentData.uri = uri || null;
-  if (sab) {
-    modalCurrentData.sab = sab;
-    modalCurrentData.returnIdType = "code";
-  } else {
-    modalCurrentData.sab = null;
-    modalCurrentData.returnIdType = "concept";
-  }
-  const dropdown = document.getElementById("cui-options-dropdown");
-  const atomsLink = document.getElementById("atoms-option");
-  const relationsLink = document.getElementById("relations-option");
-  const attributesLink = document.getElementById("attributes-option");
-  const definitionsLink = document.getElementById("definitions-option");
-  const parentsLink = document.getElementById("parents-option");
-  const childrenLink = document.getElementById("children-option");
-  const cuisLink = document.getElementById("cuis-option");
-  const apiKey = document.getElementById("api-key").value.trim();
-  const returnIdType = modalCurrentData.returnIdType;
-
-  function buildDetailUrl(detailType) {
-    const url = new URL(window.location.pathname, window.location.origin);
-    if (apiKey) url.searchParams.set("apiKey", apiKey);
-    url.searchParams.set("detail", detailType);
-    url.searchParams.set("returnIdType", returnIdType);
-    if (returnIdType === "code") {
-      url.searchParams.set("code", stripBaseUrl(uri));
-      if (sab) url.searchParams.set("sab", sab);
-    } else {
-      url.searchParams.set("cui", ui);
-    }
-    return url.toString();
-  }
-
-  if (atomsLink) atomsLink.href = buildDetailUrl("atoms");
-  if (relationsLink) relationsLink.href = buildDetailUrl("relations");
-  if (attributesLink) attributesLink.href = buildDetailUrl("attributes");
-  if (definitionsLink) definitionsLink.href = buildDetailUrl("definitions");
-  if (parentsLink) parentsLink.href = buildDetailUrl("parents");
-  if (childrenLink) childrenLink.href = buildDetailUrl("children");
-  if (cuisLink) {
-    const url = new URL(window.location.pathname, window.location.origin);
-    if (apiKey) url.searchParams.set("apiKey", apiKey);
-    url.searchParams.set("string", ui);
-    url.searchParams.set("inputType", "sourceUi");
-    url.searchParams.set("searchType", "exact");
-    url.searchParams.set("returnIdType", "concept");
-    if (sab) url.searchParams.set("sabs", sab);
-    cuisLink.href = url.toString();
-  }
-  const rect = event.currentTarget.getBoundingClientRect();
-  dropdown.style.left = rect.left + window.pageXOffset + "px";
-  dropdown.style.top = rect.bottom + window.pageYOffset + "px";
-  dropdown.classList.remove("hidden");
-  document.addEventListener(
-    "click",
-    function handleClickOutside(e) {
-      if (!dropdown.contains(e.target)) {
-        closeDropdown();
-      }
-    },
-    { once: true }
-  );
-}
-
-function closeDropdown() {
-  const dropdown = document.getElementById("cui-options-dropdown");
-  dropdown.classList.add("hidden");
-}
 
 function stripBaseUrl(fullUrl) {
   if (!fullUrl) return "";
@@ -387,7 +318,6 @@ async function fetchConceptDetails(cui, detailType, options = {}) {
   const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
 
-  closeDropdown();
 
   if (!apiKey) {
     alert("Please enter an API key first.");
@@ -752,8 +682,13 @@ async function fetchCuisForCode(code, sab) {
       uiTd.style.textDecoration = "underline";
       uiTd.style.cursor = "pointer";
       uiTd.textContent = item.ui || "N/A";
-      uiTd.addEventListener("click", (e) => {
-        openCuiOptionsDropdown(item.ui, null, item.name, null, e);
+      uiTd.addEventListener("click", () => {
+        modalCurrentData.ui = item.ui;
+        modalCurrentData.name = item.name || null;
+        modalCurrentData.sab = null;
+        modalCurrentData.uri = null;
+        modalCurrentData.returnIdType = "concept";
+        fetchConceptDetails(item.ui, "atoms");
       });
       tr.appendChild(uiTd);
 
