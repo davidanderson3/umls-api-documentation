@@ -499,11 +499,95 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
       infoTableBody.appendChild(tr);
     });
   }
+
   } catch (error) {
     resultsContainer.textContent = `Error fetching related ${relatedType}: ${error}`;
     infoTableBody.innerHTML = `<tr><td colspan="2">Error loading related ${relatedType}.</td></tr>`;
   }
 };
+
+async function fetchCuisForCode(code, sab) {
+  const apiKey = document.getElementById("api-key").value.trim();
+  if (!apiKey) {
+    alert("Please enter an API key first.");
+    return;
+  }
+
+  const resultsContainer = document.getElementById("output");
+  const infoTableBody = document.querySelector("#info-table tbody");
+  const recentRequestContainer = document.getElementById("recent-request-output");
+  const tableHead = document.querySelector("#info-table thead");
+  const infoTable = document.getElementById("info-table");
+  const noResultsMessage = document.getElementById("no-results-message");
+
+  const url = new URL("https://uts-ws.nlm.nih.gov/rest/search/current");
+  url.searchParams.append("string", code);
+  url.searchParams.append("inputType", "sourceUi");
+  url.searchParams.append("searchType", "exact");
+  url.searchParams.append("returnIdType", "concept");
+  url.searchParams.append("apiKey", apiKey);
+  url.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
+  if (sab) {
+    url.searchParams.append("sabs", sab);
+  }
+
+  const displayUrl = new URL(url);
+  displayUrl.searchParams.set("apiKey", "***");
+  recentRequestContainer.innerHTML = colorizeUrl(displayUrl);
+
+  const addressUrl = new URL(window.location.pathname, window.location.origin);
+  addressUrl.searchParams.set("string", code);
+  addressUrl.searchParams.set("inputType", "sourceUi");
+  addressUrl.searchParams.set("searchType", "exact");
+  addressUrl.searchParams.set("returnIdType", "concept");
+  if (sab) {
+    addressUrl.searchParams.set("sabs", sab);
+  }
+  window.history.pushState({}, "", addressUrl.toString());
+
+  resultsContainer.textContent = `Loading CUIs for ${code}...`;
+  tableHead.innerHTML = `<tr><th>UI</th><th>Name</th></tr>`;
+  infoTableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
+  if (infoTable) infoTable.style.display = "";
+  if (noResultsMessage) noResultsMessage.classList.add("hidden");
+
+  try {
+    const response = await fetch(url, { method: "GET", headers: { Accept: "application/json" } });
+    const data = await response.json();
+    resultsContainer.textContent = JSON.stringify(data, null, 2);
+
+    infoTableBody.innerHTML = "";
+    const results = data.result && data.result.results ? data.result.results : [];
+    await loadMRRank();
+    const sortedResults = sortByMRRank(results);
+    if (sortedResults.length === 0) {
+      if (infoTable) infoTable.style.display = "none";
+      if (noResultsMessage) noResultsMessage.classList.remove("hidden");
+      return;
+    }
+    sortedResults.forEach(item => {
+      const tr = document.createElement("tr");
+      const uiTd = document.createElement("td");
+      uiTd.style.color = "blue";
+      uiTd.style.textDecoration = "underline";
+      uiTd.style.cursor = "pointer";
+      uiTd.textContent = item.ui || "N/A";
+      uiTd.addEventListener("click", (e) => {
+        openCuiOptionsDropdown(item.ui, null, item.name, null, e);
+      });
+      tr.appendChild(uiTd);
+
+      const nameTd = document.createElement("td");
+      nameTd.textContent = item.name || "N/A";
+      tr.appendChild(nameTd);
+
+      infoTableBody.appendChild(tr);
+    });
+  } catch (error) {
+    resultsContainer.textContent = `Error fetching CUIs: ${error}`;
+    infoTableBody.innerHTML = '<tr><td colspan="2">Error loading CUIs.</td></tr>';
+  }
+}
 
 window.addEventListener("DOMContentLoaded", function () {
 
