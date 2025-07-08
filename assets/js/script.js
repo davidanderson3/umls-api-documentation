@@ -280,6 +280,7 @@ function openCuiOptionsDropdown(ui, sab, name, uri, event) {
   const dropdown = document.getElementById("cui-options-dropdown");
   const atomsLink = document.getElementById("atoms-option");
   const relationsLink = document.getElementById("relations-option");
+  const attributesLink = document.getElementById("attributes-option");
   const definitionsLink = document.getElementById("definitions-option");
   const parentsLink = document.getElementById("parents-option");
   const childrenLink = document.getElementById("children-option");
@@ -303,6 +304,7 @@ function openCuiOptionsDropdown(ui, sab, name, uri, event) {
 
   if (atomsLink) atomsLink.href = buildDetailUrl("atoms");
   if (relationsLink) relationsLink.href = buildDetailUrl("relations");
+  if (attributesLink) attributesLink.href = buildDetailUrl("attributes");
   if (definitionsLink) definitionsLink.href = buildDetailUrl("definitions");
   if (parentsLink) parentsLink.href = buildDetailUrl("parents");
   if (childrenLink) childrenLink.href = buildDetailUrl("children");
@@ -454,6 +456,8 @@ async function fetchConceptDetails(cui, detailType, options = {}) {
       tableHead.innerHTML = `<tr><th>Atom</th><th>Term Type</th><th>Root Source</th></tr>`;
     } else if (detailType === "definitions") {
       tableHead.innerHTML = `<tr><th>Definition</th><th>Root Source</th></tr>`;
+    } else if (detailType === "attributes") {
+      tableHead.innerHTML = `<tr><th>Name</th><th>Value</th><th>Root Source</th></tr>`;
     } else if (detailType === "relations") {
       tableHead.innerHTML = `<tr>
           <th>From Name</th>
@@ -500,6 +504,20 @@ async function fetchConceptDetails(cui, detailType, options = {}) {
         const col2 = document.createElement("td");
         col2.textContent = definition.rootSource || "(no rootSource)";
         tr.appendChild(col2);
+        infoTableBody.appendChild(tr);
+      });
+    } else if (detailType === "attributes") {
+      sortedDetails.forEach((attr, index) => {
+        const tr = document.createElement("tr");
+        const col1 = document.createElement("td");
+        col1.textContent = attr.attributeName || attr.name || `(Attribute #${index + 1})`;
+        tr.appendChild(col1);
+        const col2 = document.createElement("td");
+        col2.textContent = attr.value || attr.attributeValue || "";
+        tr.appendChild(col2);
+        const col3 = document.createElement("td");
+        col3.textContent = attr.rootSource || "(no rootSource)";
+        tr.appendChild(col3);
         infoTableBody.appendChild(tr);
       });
     } else if (detailType === "relations") {
@@ -763,6 +781,7 @@ window.addEventListener("DOMContentLoaded", function () {
   const rootSourceHeader = document.getElementById("root-source-header");
   const queryInput = document.getElementById("query");
   const definitionsOption = document.getElementById("definitions-option");
+  const attributesOption = document.getElementById("attributes-option");
   const parentsOption = document.getElementById("parents-option");
   const childrenOption = document.getElementById("children-option");
   const cuisOption = document.getElementById("cuis-option");
