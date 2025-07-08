@@ -11,6 +11,7 @@
     <div id="cui-options-dropdown" class="dropdown hidden">
         <a id="atoms-option" href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'atoms'); closeDropdown(); return false;">Atoms</a>
         <a id="relations-option" href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'relations'); closeDropdown(); return false;">Relations</a>
+        <a id="attributes-option" href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'attributes'); closeDropdown(); return false;">Attributes</a>
         <a id="definitions-option" href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'definitions'); closeDropdown(); return false;">Definitions</a>
         <a id="parents-option" href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'parents'); closeDropdown(); return false;">Parents</a>
         <a id="children-option" href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'children'); closeDropdown(); return false;">Children</a>
@@ -18,7 +19,7 @@
     </div>
 
     <h1>UMLS API Interactive Documentation</h1>
-    <p>This page allows you to search the UMLS API and inspect atoms, relations, definitions, and hierarchical information for returned concepts or codes.</p>
+    <p>This page allows you to search the UMLS API and inspect atoms, relations, definitions, attributes, and hierarchical information for returned concepts or codes.</p>
 
     <div class="umls-app__container two-column">
         <!-- Left column: search + recent -->
