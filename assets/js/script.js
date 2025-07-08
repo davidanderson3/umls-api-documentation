@@ -67,43 +67,48 @@ function sortByAdditionalRelationLabel(arr) {
 }
 
 function renderConceptSummary(concept) {
-  const summary = document.getElementById("concept-summary");
-  if (!summary) return;
+  const infoTableBody = document.querySelector("#info-table tbody");
+  if (!infoTableBody) return;
+
+  infoTableBody.querySelectorAll(".concept-summary-row").forEach((row) => row.remove());
+
   if (!concept || typeof concept !== "object") {
-    summary.classList.add("hidden");
-    summary.innerHTML = "";
     return;
   }
 
-  summary.innerHTML = "";
-  const header = document.createElement("h2");
-  header.textContent = concept.name
+  const rows = [];
+  const nameValue = concept.name
     ? `${concept.name} (${concept.ui || ""})`
     : concept.ui || "";
-  summary.appendChild(header);
+  if (nameValue) rows.push(["Name", nameValue]);
 
   if (Array.isArray(concept.semanticTypes) && concept.semanticTypes.length) {
-    const p = document.createElement("p");
     const types = concept.semanticTypes
       .map((t) => t.name || t.abbrev || t)
       .join(", ");
-    p.textContent = `Semantic Types: ${types}`;
-    summary.appendChild(p);
+    rows.push(["Semantic Types", types]);
   }
 
   if (concept.atomCount !== undefined) {
-    const p = document.createElement("p");
-    p.textContent = `Atom Count: ${concept.atomCount}`;
-    summary.appendChild(p);
+    rows.push(["Atom Count", concept.atomCount]);
   }
 
   if (concept.relationCount !== undefined) {
-    const p = document.createElement("p");
-    p.textContent = `Relation Count: ${concept.relationCount}`;
-    summary.appendChild(p);
+    rows.push(["Relation Count", concept.relationCount]);
   }
 
-  summary.classList.remove("hidden");
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const [label, value] = rows[i];
+    const tr = document.createElement("tr");
+    tr.classList.add("concept-summary-row");
+    const tdKey = document.createElement("td");
+    tdKey.textContent = label;
+    const tdValue = document.createElement("td");
+    tdValue.textContent = value;
+    tr.appendChild(tdKey);
+    tr.appendChild(tdValue);
+    infoTableBody.prepend(tr);
+  }
 }
 
 const searchCache = {};
@@ -464,28 +469,10 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         const tdValue = document.createElement("td");
         if (typeof value === "string" && value.startsWith("http")) {
           const link = document.createElement("a");
-          link.href = "#";
+          link.href = value;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
           link.textContent = value;
-          link.addEventListener("click", function (e) {
-            e.preventDefault();
-            const atomsMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)\/atoms$/);
-            const codeMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)$/);
-            if (atomsMatch) {
-              modalCurrentData.sab = atomsMatch[1];
-              modalCurrentData.ui = atomsMatch[2];
-              modalCurrentData.uri = value.replace(/\/atoms$/, "");
-              modalCurrentData.returnIdType = "code";
-              fetchConceptDetails(atomsMatch[2], "");
-            } else if (codeMatch) {
-              modalCurrentData.sab = codeMatch[1];
-              modalCurrentData.ui = codeMatch[2];
-              modalCurrentData.uri = value;
-              modalCurrentData.returnIdType = "code";
-              fetchConceptDetails(codeMatch[2], "");
-            } else {
-              fetchRelatedDetail(value, key.toLowerCase());
-            }
-          });
           tdValue.appendChild(link);
         } else if (typeof value === "string") {
           tdValue.textContent = value;
@@ -690,28 +677,10 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
       // Link URL values back into the app
       if (typeof value === "string" && value.startsWith("http")) {
         const link = document.createElement("a");
-        link.href = "#";
+        link.href = value;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
         link.textContent = value;
-        link.addEventListener("click", function (e) {
-          e.preventDefault();
-          const atomsMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)\/atoms$/);
-          const codeMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)$/);
-          if (atomsMatch) {
-            modalCurrentData.sab = atomsMatch[1];
-            modalCurrentData.ui = atomsMatch[2];
-            modalCurrentData.uri = value.replace(/\/atoms$/, "");
-            modalCurrentData.returnIdType = "code";
-            fetchConceptDetails(atomsMatch[2], "");
-          } else if (codeMatch) {
-            modalCurrentData.sab = codeMatch[1];
-            modalCurrentData.ui = codeMatch[2];
-            modalCurrentData.uri = value;
-            modalCurrentData.returnIdType = "code";
-            fetchConceptDetails(codeMatch[2], "");
-          } else {
-            fetchRelatedDetail(value, key.toLowerCase());
-          }
-        });
         tdValue.appendChild(link);
       } else if (typeof value === "string") {
         tdValue.textContent = value;
