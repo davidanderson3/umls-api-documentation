@@ -114,6 +114,7 @@ async function searchUMLS() {
   displayUrl.searchParams.set("apiKey", "***");
   recentRequestContainer.innerHTML = colorizeUrl(displayUrl);
   updateDocLink(url);
+  updateLocationHash(url);
 
   try {
     const response = await fetch(url, {
@@ -189,6 +190,12 @@ function colorizeUrl(urlObject) {
   return colorized;
 }
 
+function updateLocationHash(urlObject) {
+  if (!urlObject || !urlObject.pathname) return;
+  const cleanPath = urlObject.pathname.replace(/^\/rest\/?/, "");
+  window.location.hash = cleanPath ? `#${cleanPath}` : "";
+}
+
 function updateDocLink(urlObject) {
   const docLink = document.getElementById("recent-doc-link");
   if (!docLink || !urlObject) return;
@@ -257,6 +264,33 @@ function stripBaseUrl(fullUrl) {
   return parts.length ? parts[parts.length - 1] : fullUrl;
 }
 
+function parseHash() {
+  const hash = window.location.hash.replace(/^#/, "");
+  if (!hash) return {};
+  const [pathPart, queryPart] = hash.split("?");
+  const parts = pathPart.split("/").filter(Boolean);
+  const result = {};
+  if (parts[0] === "content") {
+    if (parts[2] === "source" && parts.length >= 6) {
+      result.sab = parts[3];
+      result.code = parts[4];
+      result.detail = parts[5];
+      result.returnIdType = "code";
+    } else if (parts[2] === "CUI" && parts.length >= 5) {
+      result.cui = parts[3];
+      result.detail = parts[4];
+      result.returnIdType = "concept";
+    }
+  }
+  if (queryPart) {
+    const sp = new URLSearchParams(queryPart);
+    for (const [k, v] of sp.entries()) {
+      result[k] = v;
+    }
+  }
+  return result;
+}
+
 function getSelectedVocabularies() {
   return Array.from(document.querySelectorAll("#vocab-container input:checked")).map(
     checkbox => checkbox.value
@@ -298,6 +332,7 @@ async function fetchConceptDetails(cui, detailType) {
   displayApiUrl.searchParams.set("apiKey", "***");
   recentRequestContainer.innerHTML = colorizeUrl(displayApiUrl);
   updateDocLink(apiUrlObj);
+  updateLocationHash(apiUrlObj);
 
 
   const addressUrl = new URL(window.location.pathname, window.location.origin);
@@ -450,6 +485,7 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
   displayUrlObj.searchParams.set("apiKey", "***");
   document.getElementById("recent-request-output").innerHTML = colorizeUrl(displayUrlObj);
   updateDocLink(urlObj);
+  updateLocationHash(urlObj);
 
   const currentUrl = new URL(window.location.pathname, window.location.origin);
   currentUrl.searchParams.set("related", relatedType);
@@ -641,16 +677,17 @@ window.addEventListener("DOMContentLoaded", function () {
   // Read URL params (existing code)...
   function applyUrlParams() {
     const params = new URLSearchParams(window.location.search);
+    const hashParams = parseHash();
     const apiKey = params.get("apiKey");
     const searchString = params.get("string");
-    const returnIdType = params.get("returnIdType");
-    const sabs = params.get("sabs");
-    const detail = params.get("detail");
-    const cui = params.get("cui");
-    const code = params.get("code");
-    const related = params.get("related");
-    const relatedId = params.get("relatedId");
-    const sab = params.get("sab");
+    let returnIdType = params.get("returnIdType") || hashParams.returnIdType;
+    const sabs = params.get("sabs") || hashParams.sabs;
+    let detail = params.get("detail") || hashParams.detail;
+    let cui = params.get("cui") || hashParams.cui;
+    let code = params.get("code") || hashParams.code;
+    let related = params.get("related") || hashParams.related;
+    let relatedId = params.get("relatedId") || hashParams.relatedId;
+    let sab = params.get("sab") || hashParams.sab;
 
     if (apiKey) {
       document.getElementById("api-key").value = apiKey;
