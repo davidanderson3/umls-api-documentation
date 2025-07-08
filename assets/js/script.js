@@ -113,6 +113,7 @@ async function searchUMLS() {
   const displayUrl = new URL(url);
   displayUrl.searchParams.set("apiKey", "***");
   recentRequestContainer.innerHTML = colorizeUrl(displayUrl);
+  updateDocLink(url);
 
   try {
     const response = await fetch(url, {
@@ -186,6 +187,18 @@ function colorizeUrl(urlObject) {
     colorized += `?${params.join("&")}`;
   }
   return colorized;
+}
+
+function updateDocLink(urlObject) {
+  const docLink = document.getElementById("recent-doc-link");
+  if (!docLink || !urlObject) return;
+  const parts = urlObject.pathname.split("/");
+  const section = parts.length > 2 ? parts[2] : "";
+  let docUrl = "https://documentation.uts.nlm.nih.gov/rest/home.html";
+  if (section) {
+    docUrl = `https://documentation.uts.nlm.nih.gov/rest/${section}.html`;
+  }
+  docLink.href = docUrl;
 }
 
 function openCuiOptionsDropdown(ui, sab, name, uri, event) {
@@ -267,6 +280,7 @@ async function fetchConceptDetails(cui, detailType) {
   const displayApiUrl = new URL(apiUrlObj);
   displayApiUrl.searchParams.set("apiKey", "***");
   recentRequestContainer.innerHTML = colorizeUrl(displayApiUrl);
+  updateDocLink(apiUrlObj);
 
 
   const addressUrl = new URL(window.location.pathname, window.location.origin);
@@ -418,6 +432,7 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
   let displayUrlObj = new URL(urlObj);
   displayUrlObj.searchParams.set("apiKey", "***");
   document.getElementById("recent-request-output").innerHTML = colorizeUrl(displayUrlObj);
+  updateDocLink(urlObj);
 
   const currentUrl = new URL(window.location.pathname, window.location.origin);
   currentUrl.searchParams.set("related", relatedType);
@@ -494,6 +509,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
   // Preload MRRANK data for later sorting
   loadMRRank();
+  updateDocLink(new URL("https://uts-ws.nlm.nih.gov/rest/home.html"));
 
   // Grab elements once DOM is ready
   const returnSelector = document.getElementById("return-id-type");
