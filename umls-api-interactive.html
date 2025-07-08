@@ -9,8 +9,8 @@
 <body>
 <div class="umls-app">
     <div id="cui-options-dropdown" class="dropdown hidden">
-        <a href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'atoms'); closeDropdown(); return false;">Atoms</a>
-        <a href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'relations'); closeDropdown(); return false;">Relations</a>
+        <a id="atoms-option" href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'atoms'); closeDropdown(); return false;">Atoms</a>
+        <a id="relations-option" href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'relations'); closeDropdown(); return false;">Relations</a>
         <a id="definitions-option" href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'definitions'); closeDropdown(); return false;">Definitions</a>
         <a id="parents-option" href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'parents'); closeDropdown(); return false;">Parents</a>
         <a id="children-option" href="#" class="dropdown-item" onclick="fetchConceptDetails(modalCurrentData.ui, 'children'); closeDropdown(); return false;">Children</a>
