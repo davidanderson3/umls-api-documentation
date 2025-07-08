@@ -72,13 +72,15 @@ async function searchUMLS() {
     return;
   }
 
-  const params = new URLSearchParams();
-  params.set("string", searchString);
-  params.set("returnIdType", returnIdType);
-  if (selectedVocabularies.length > 0) {
-    params.set("sabs", selectedVocabularies.join(","));
+  const newUrl = new URL(window.location.pathname, window.location.origin);
+  newUrl.searchParams.set("string", searchString);
+  if (returnIdType !== "concept") {
+    newUrl.searchParams.set("returnIdType", returnIdType);
   }
-  window.history.pushState({}, "", "?" + params.toString());
+  if (selectedVocabularies.length > 0) {
+    newUrl.searchParams.set("sabs", selectedVocabularies.join(","));
+  }
+  window.history.pushState({}, "", newUrl.toString());
 
   const resultsContainer = document.getElementById("output");
   const infoTableBody = document.querySelector("#info-table tbody");
@@ -254,7 +256,15 @@ async function fetchConceptDetails(cui, detailType) {
 
 
   const addressUrl = new URL(window.location.pathname, window.location.origin);
-  addressUrl.searchParams.set("endpoint", detailType);
+  addressUrl.searchParams.set("detail", detailType);
+  if (returnIdType === "code") {
+    addressUrl.searchParams.set("code", stripBaseUrl(modalCurrentData.uri));
+    if (modalCurrentData.sab) {
+      addressUrl.searchParams.set("sab", modalCurrentData.sab);
+    }
+  } else {
+    addressUrl.searchParams.set("cui", cui);
+  }
   window.history.pushState({}, "", addressUrl.toString());
 
   resultsContainer.textContent = `Loading ${detailType} for ${cui}...`;
@@ -397,6 +407,9 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
   const currentUrl = new URL(window.location.pathname, window.location.origin);
   currentUrl.searchParams.set("related", relatedType);
   currentUrl.searchParams.set("relatedId", stripBaseUrl(apiUrl));
+  if (rootSource) {
+    currentUrl.searchParams.set("sab", rootSource);
+  }
   window.history.pushState({}, "", currentUrl.toString());
 
   const resultsContainer = document.getElementById("output");
