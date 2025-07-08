@@ -396,6 +396,10 @@ async function fetchConceptDetails(cui, detailType) {
       method: "GET",
       headers: { Accept: "application/json" }
     });
+    if (!response.ok) {
+      const message = await response.text().catch(() => "");
+      throw new Error(`HTTP ${response.status}: ${message}`);
+    }
     const data = await response.json();
 
     resultsContainer.textContent = JSON.stringify(data, null, 2);
@@ -547,6 +551,10 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
       method: "GET",
       headers: { Accept: "application/json" }
     });
+    if (!response.ok) {
+      const message = await response.text().catch(() => "");
+      throw new Error(`HTTP ${response.status}: ${message}`);
+    }
     const data = await response.json();
     resultsContainer.textContent = JSON.stringify(data, null, 2);
     infoTableBody.innerHTML = "";
