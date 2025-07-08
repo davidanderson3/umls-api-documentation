@@ -74,6 +74,7 @@ async function searchUMLS() {
 
   const newUrl = new URL(window.location.pathname, window.location.origin);
   newUrl.searchParams.set("string", searchString);
+  newUrl.searchParams.set("apiKey", apiKey);
   if (returnIdType !== "concept") {
     newUrl.searchParams.set("returnIdType", returnIdType);
   }
@@ -249,7 +250,13 @@ async function fetchConceptDetails(cui, detailType) {
 
   let baseUrl;
   if (returnIdType === "code") {
-    baseUrl = modalCurrentData.uri + "/" + detailType;
+    if (modalCurrentData.uri) {
+      baseUrl = modalCurrentData.uri + "/" + detailType;
+    } else if (modalCurrentData.sab) {
+      baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${modalCurrentData.sab}/${cui}/${detailType}`;
+    } else {
+      baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${cui}/${detailType}`;
+    }
   } else {
     baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${cui}/${detailType}`;
   }
@@ -264,6 +271,7 @@ async function fetchConceptDetails(cui, detailType) {
 
   const addressUrl = new URL(window.location.pathname, window.location.origin);
   addressUrl.searchParams.set("detail", detailType);
+  addressUrl.searchParams.set("apiKey", apiKey);
   if (returnIdType === "code") {
     addressUrl.searchParams.set("code", stripBaseUrl(modalCurrentData.uri));
     if (modalCurrentData.sab) {
@@ -414,6 +422,7 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource) {
   const currentUrl = new URL(window.location.pathname, window.location.origin);
   currentUrl.searchParams.set("related", relatedType);
   currentUrl.searchParams.set("relatedId", stripBaseUrl(apiUrl));
+  currentUrl.searchParams.set("apiKey", apiKey);
   if (rootSource) {
     currentUrl.searchParams.set("sab", rootSource);
   }
@@ -499,26 +508,64 @@ window.addEventListener("DOMContentLoaded", function () {
   if (!returnSelector || !vocabContainer || !rootSourceHeader || !queryInput) return;
 
   // Read URL params (existing code)...
-  const params = new URLSearchParams(window.location.search);
-  const apiKey = params.get("apiKey");
-  const searchString = params.get("string");
-  const returnIdType = params.get("returnIdType");
-  const sabs = params.get("sabs");
+  function applyUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const apiKey = params.get("apiKey");
+    const searchString = params.get("string");
+    const returnIdType = params.get("returnIdType");
+    const sabs = params.get("sabs");
+    const detail = params.get("detail");
+    const cui = params.get("cui");
+    const code = params.get("code");
+    const related = params.get("related");
+    const relatedId = params.get("relatedId");
+    const sab = params.get("sab");
 
-  if (apiKey) {
-    document.getElementById("api-key").value = apiKey;
-  }
-  if (searchString) {
-    document.getElementById("query").value = searchString;
-  }
-  if (returnIdType) {
-    returnSelector.value = returnIdType;
-  }
-  if (sabs) {
-    const vocabArray = sabs.split(",");
+    if (apiKey) {
+      document.getElementById("api-key").value = apiKey;
+    }
+    if (searchString) {
+      document.getElementById("query").value = searchString;
+    } else {
+      document.getElementById("query").value = "";
+    }
+    if (returnIdType) {
+      returnSelector.value = returnIdType;
+    }
+
     document.querySelectorAll("#vocab-container input").forEach(cb => {
-      if (vocabArray.includes(cb.value)) cb.checked = true;
+      cb.checked = false;
     });
+    if (sabs) {
+      sabs.split(",").forEach(v => {
+        const cb = document.querySelector(`#vocab-container input[value="${v}"]`);
+        if (cb) cb.checked = true;
+      });
+    }
+    updateVocabVisibility();
+
+    if (detail) {
+      if (returnSelector.value === "code" && code && sab) {
+        modalCurrentData.sab = sab;
+        modalCurrentData.ui = code;
+        modalCurrentData.uri = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${code}`;
+      } else {
+        modalCurrentData.sab = null;
+        modalCurrentData.ui = cui;
+        modalCurrentData.uri = null;
+      }
+      fetchConceptDetails(code || cui, detail);
+    } else if (related && relatedId) {
+      let fullUrl;
+      if (sab) {
+        fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${relatedId}`;
+      } else {
+        fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${relatedId}`;
+      }
+      fetchRelatedDetail(fullUrl, related, sab);
+    } else if (searchString) {
+      searchUMLS();
+    }
   }
 
   // Helper to toggle visibility
@@ -551,31 +598,9 @@ window.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  if (searchString) {
-    searchUMLS();
-  }
+  applyUrlParams();
 
-  window.addEventListener("popstate", () => {
-    const popParams = new URLSearchParams(window.location.search);
-    const popSearch = popParams.get("string");
-    if (popSearch) {
-      document.getElementById("query").value = popSearch;
-      const popReturn = popParams.get("returnIdType");
-      if (popReturn) returnSelector.value = popReturn;
-      const popSabs = popParams.get("sabs");
-      document.querySelectorAll("#vocab-container input").forEach(cb => {
-        cb.checked = false;
-      });
-      if (popSabs) {
-        popSabs.split(",").forEach(v => {
-          const cb = document.querySelector(`#vocab-container input[value="${v}"]`);
-          if (cb) cb.checked = true;
-        });
-      }
-      updateVocabVisibility();
-      searchUMLS();
-    }
-  });
+  window.addEventListener("popstate", applyUrlParams);
 
 
 });
