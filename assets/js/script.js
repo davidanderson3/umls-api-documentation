@@ -111,7 +111,7 @@ async function renderSearchResults(data, returnIdType) {
         modalCurrentData.uri = null;
         modalCurrentData.returnIdType = "concept";
       }
-      fetchConceptDetails(item.ui, "atoms");
+      fetchConceptDetails(item.ui, "");
     });
     tr.appendChild(uiTd);
 
@@ -281,15 +281,26 @@ function parseHash() {
   const parts = pathPart.split("/").filter(Boolean);
   const result = {};
   if (parts[0] === "content") {
-    if (parts[2] === "source" && parts.length >= 6) {
-      result.sab = parts[3];
-      result.code = parts[4];
-      result.detail = parts[5];
-      result.returnIdType = "code";
-    } else if (parts[2] === "CUI" && parts.length >= 5) {
-      result.cui = parts[3];
-      result.detail = parts[4];
-      result.returnIdType = "concept";
+    if (parts[2] === "source") {
+      if (parts.length >= 6) {
+        result.sab = parts[3];
+        result.code = parts[4];
+        result.detail = parts[5];
+        result.returnIdType = "code";
+      } else if (parts.length === 5) {
+        result.sab = parts[3];
+        result.code = parts[4];
+        result.returnIdType = "code";
+      }
+    } else if (parts[2] === "CUI") {
+      if (parts.length >= 5) {
+        result.cui = parts[3];
+        result.detail = parts[4];
+        result.returnIdType = "concept";
+      } else if (parts.length === 4) {
+        result.cui = parts[3];
+        result.returnIdType = "concept";
+      }
     }
   }
   if (queryPart) {
@@ -307,7 +318,7 @@ function getSelectedVocabularies() {
   );
 }
 
-async function fetchConceptDetails(cui, detailType, options = {}) {
+async function fetchConceptDetails(cui, detailType = "", options = {}) {
   const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   const returnIdType = modalCurrentData.returnIdType ||
@@ -326,14 +337,14 @@ async function fetchConceptDetails(cui, detailType, options = {}) {
   let baseUrl;
   if (returnIdType === "code") {
     if (modalCurrentData.uri) {
-      baseUrl = modalCurrentData.uri + "/" + detailType;
+      baseUrl = modalCurrentData.uri + (detailType ? "/" + detailType : "");
     } else if (modalCurrentData.sab) {
-      baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${modalCurrentData.sab}/${cui}/${detailType}`;
+      baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${modalCurrentData.sab}/${cui}` + (detailType ? `/${detailType}` : "");
     } else {
-      baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${cui}/${detailType}`;
+      baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${cui}` + (detailType ? `/${detailType}` : "");
     }
   } else {
-    baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${cui}/${detailType}`;
+    baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${cui}` + (detailType ? `/${detailType}` : "");
   }
   const apiUrlObj = new URL(baseUrl);
   apiUrlObj.searchParams.append("apiKey", apiKey);
@@ -360,9 +371,10 @@ async function fetchConceptDetails(cui, detailType, options = {}) {
   }
   updateLocationHash(apiUrlObj);
 
-  resultsContainer.textContent = `Loading ${detailType} for ${cui}...`;
-  const loadingColspan =
-    detailType === "relations" ? 5 : detailType === "definitions" ? 2 : 3;
+  resultsContainer.textContent = detailType
+    ? `Loading ${detailType} for ${cui}...`
+    : `Loading details for ${cui}...`;
+  const loadingColspan = detailType === "relations" ? 5 : detailType === "definitions" ? 2 : detailType ? 3 : 2;
   infoTableBody.innerHTML = `<tr><td colspan="${loadingColspan}">Loading...</td></tr>`;
 
   try {
@@ -380,7 +392,58 @@ async function fetchConceptDetails(cui, detailType, options = {}) {
 
     infoTableBody.innerHTML = "";
 
-    if (detailType === "atoms") {
+    if (!detailType) {
+      tableHead.innerHTML = `<tr><th>Key</th><th>Value</th></tr>`;
+      const detailObj = data && typeof data.result === "object" && !Array.isArray(data.result)
+        ? data.result
+        : data;
+      if (!detailObj || typeof detailObj !== "object") {
+        infoTableBody.innerHTML = `<tr><td colspan="2">No details found for this ${cui}.</td></tr>`;
+        return;
+      }
+      Object.keys(detailObj).forEach(key => {
+        const value = detailObj[key];
+        if (typeof value === "string" && value.toUpperCase() === "NONE") return;
+        const tr = document.createElement("tr");
+        const tdKey = document.createElement("td");
+        tdKey.textContent = key;
+        const tdValue = document.createElement("td");
+        if (typeof value === "string" && value.startsWith("http")) {
+          const link = document.createElement("a");
+          link.href = "#";
+          link.textContent = value;
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            const atomsMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)\/atoms$/);
+            const codeMatch = value.match(/\/rest\/content\/[^/]+\/source\/([^/]+)\/([^/]+)$/);
+            if (atomsMatch) {
+              modalCurrentData.sab = atomsMatch[1];
+              modalCurrentData.ui = atomsMatch[2];
+              modalCurrentData.uri = value.replace(/\/atoms$/, "");
+              modalCurrentData.returnIdType = "code";
+              fetchConceptDetails(atomsMatch[2], "");
+            } else if (codeMatch) {
+              modalCurrentData.sab = codeMatch[1];
+              modalCurrentData.ui = codeMatch[2];
+              modalCurrentData.uri = value;
+              modalCurrentData.returnIdType = "code";
+              fetchConceptDetails(codeMatch[2], "");
+            } else {
+              fetchRelatedDetail(value, key.toLowerCase());
+            }
+          });
+          tdValue.appendChild(link);
+        } else if (typeof value === "string") {
+          tdValue.textContent = value;
+        } else {
+          tdValue.textContent = JSON.stringify(value, null, 2);
+        }
+        tr.appendChild(tdKey);
+        tr.appendChild(tdValue);
+        infoTableBody.appendChild(tr);
+      });
+
+    } else if (detailType === "atoms") {
       tableHead.innerHTML = `<tr><th>Atom</th><th>Term Type</th><th>Root Source</th></tr>`;
     } else if (detailType === "definitions") {
       tableHead.innerHTML = `<tr><th>Definition</th><th>Root Source</th></tr>`;
@@ -583,13 +646,13 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
             modalCurrentData.ui = atomsMatch[2];
             modalCurrentData.uri = value.replace(/\/atoms$/, "");
             modalCurrentData.returnIdType = "code";
-            fetchConceptDetails(atomsMatch[2], "atoms");
+            fetchConceptDetails(atomsMatch[2], "");
           } else if (codeMatch) {
             modalCurrentData.sab = codeMatch[1];
             modalCurrentData.ui = codeMatch[2];
             modalCurrentData.uri = value;
             modalCurrentData.returnIdType = "code";
-            fetchConceptDetails(codeMatch[2], "atoms");
+            fetchConceptDetails(codeMatch[2], "");
           } else {
             fetchRelatedDetail(value, key.toLowerCase());
           }
@@ -685,7 +748,7 @@ async function fetchCuisForCode(code, sab) {
         modalCurrentData.sab = null;
         modalCurrentData.uri = null;
         modalCurrentData.returnIdType = "concept";
-        fetchConceptDetails(item.ui, "atoms");
+        fetchConceptDetails(item.ui, "");
       });
       tr.appendChild(uiTd);
 
@@ -771,6 +834,19 @@ window.addEventListener("DOMContentLoaded", function () {
         modalCurrentData.returnIdType = "concept";
       }
       fetchConceptDetails(code || cui, detail, { skipPushState: fromPopState });
+    } else if ((returnSelector.value === "code" && code && sab) || (returnSelector.value !== "code" && cui)) {
+      if (returnSelector.value === "code") {
+        modalCurrentData.sab = sab;
+        modalCurrentData.ui = code;
+        modalCurrentData.uri = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${code}`;
+        modalCurrentData.returnIdType = "code";
+      } else {
+        modalCurrentData.sab = null;
+        modalCurrentData.ui = cui;
+        modalCurrentData.uri = null;
+        modalCurrentData.returnIdType = "concept";
+      }
+      fetchConceptDetails(code || cui, "", { skipPushState: fromPopState });
     } else if (related && relatedId) {
       let fullUrl;
       if (sab) {
