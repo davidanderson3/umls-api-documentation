@@ -697,13 +697,14 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         col3.textContent = atom.rootSource || "(no rootSource)";
         tr.appendChild(col3);
         const col4 = document.createElement("td");
-        col4.textContent = atom.code || "";
-        if (atom.code) {
+        const codeVal = stripBaseUrl(atom.code);
+        col4.textContent = codeVal;
+        if (codeVal) {
           col4.style.color = "blue";
           col4.style.textDecoration = "underline";
           col4.style.cursor = "pointer";
           col4.addEventListener("click", () => {
-            fetchCuisForCode(atom.code, atom.rootSource);
+            fetchCuisForCode(codeVal, atom.rootSource);
           });
         }
         tr.appendChild(col4);
