@@ -403,7 +403,7 @@ function parseHash() {
     } else if (parts[2] === "CUI") {
       if (parts.length >= 5) {
         result.cui = parts[3];
-        result.detail = parts[4];
+        result.detail = parts[4] === "concept" ? "" : parts[4];
         result.returnIdType = "concept";
       } else if (parts.length === 4) {
         result.cui = parts[3];
@@ -438,7 +438,8 @@ function parseUmlsUrl(url) {
     const u = new URL(url, window.location.href);
     let m = u.pathname.match(/\/content\/[^/]+\/CUI\/([^/]+)(?:\/(.+))?$/);
     if (m) {
-      return { type: "concept", cui: m[1], detail: m[2] || "" };
+      const detail = m[2] || "";
+      return { type: "concept", cui: m[1], detail: detail === "concept" ? "" : detail };
     }
     m = u.pathname.match(/\/content\/[^/]+\/source\/([^/]+)\/([^/]+)(?:\/(.+))?$/);
     if (m) {
@@ -461,16 +462,17 @@ function parseUmlsUrl(url) {
 function navigateToUmlsUrl(url, key) {
   const parsed = parseUmlsUrl(url);
   if (parsed) {
+    const detail = parsed.detail === "concept" ? "" : parsed.detail;
     if (parsed.type === "code") {
       modalCurrentData.sab = parsed.sab;
       modalCurrentData.ui = parsed.code;
       const baseParts = url.split("/");
-      if (parsed.detail) {
-        baseParts.splice(-parsed.detail.split("/").length, parsed.detail.split("/").length);
+      if (detail) {
+        baseParts.splice(-detail.split("/").length, detail.split("/").length);
       }
       modalCurrentData.uri = baseParts.join("/");
       modalCurrentData.returnIdType = "code";
-      fetchConceptDetails(parsed.code, parsed.detail || key.toLowerCase());
+      fetchConceptDetails(parsed.code, detail !== undefined ? detail : key.toLowerCase());
     } else if (parsed.type === "search") {
       const queryInput = document.getElementById("query");
       const returnSelector = document.getElementById("return-id-type");
@@ -497,13 +499,13 @@ function navigateToUmlsUrl(url, key) {
       modalCurrentData.ui = parsed.aui;
       modalCurrentData.uri = null;
       modalCurrentData.returnIdType = "aui";
-      fetchAuiDetails(parsed.aui, parsed.detail || key.toLowerCase());
+      fetchAuiDetails(parsed.aui, detail !== undefined ? detail : key.toLowerCase());
     } else {
       modalCurrentData.sab = null;
       modalCurrentData.ui = parsed.cui;
       modalCurrentData.uri = null;
       modalCurrentData.returnIdType = "concept";
-      fetchConceptDetails(parsed.cui, parsed.detail || key.toLowerCase());
+      fetchConceptDetails(parsed.cui, detail !== undefined ? detail : key.toLowerCase());
     }
   } else {
     fetchRelatedDetail(url, key.toLowerCase());
@@ -1291,6 +1293,7 @@ window.addEventListener("DOMContentLoaded", function () {
     const inputType = params.get("inputType") || hashParams.inputType;
     const searchType = params.get("searchType") || hashParams.searchType;
     let detail = params.get("detail") || hashParams.detail;
+    if (detail === "concept") detail = "";
     let cui = params.get("cui") || hashParams.cui;
     let code = params.get("code") || hashParams.code;
     let aui = params.get("aui") || hashParams.aui;
