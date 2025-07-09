@@ -427,6 +427,11 @@ function parseHash() {
       }
     }
   }
+  else if (parts[0] === "semantic-network" && parts[1] === "semantic-types") {
+    if (parts.length >= 3) {
+      result.tui = parts[2];
+    }
+  }
   else if (parts[0] === "search") {
     if (parts.length >= 2) {
       result.searchRelease = parts[1];
@@ -456,6 +461,10 @@ function parseUmlsUrl(url) {
     m = u.pathname.match(/\/content\/[^/]+\/AUI\/([^/]+)(?:\/(.+))?$/);
     if (m) {
       return { type: "aui", aui: m[1], detail: m[2] || "" };
+    }
+    m = u.pathname.match(/\/semantic-network\/semantic-types\/([^/]+)\/?$/);
+    if (m) {
+      return { type: "semanticType", tui: m[1] };
     }
     m = u.pathname.match(/\/search\/([^/]+)\/?$/);
     if (m) {
@@ -508,6 +517,8 @@ function navigateToUmlsUrl(url, key) {
       modalCurrentData.uri = null;
       modalCurrentData.returnIdType = "aui";
       fetchAuiDetails(parsed.aui, detail !== undefined ? detail : key.toLowerCase());
+    } else if (parsed.type === "semanticType") {
+      fetchSemanticType(parsed.tui);
     } else {
       modalCurrentData.sab = null;
       modalCurrentData.ui = parsed.cui;
@@ -654,11 +665,14 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
           const items = value.map(st => {
             if (!st) return "";
             const anchor = document.createElement("a");
-            anchor.href = st.uri || "#";
-            anchor.target = "_blank";
-            const tuiMatch = st.uri && st.uri.match(/TUI\/([^/]+)$/);
-            const tui = tuiMatch ? ` (${tuiMatch[1]})` : "";
-            anchor.textContent = `${st.name || st.tui || ""}${tui}`.trim();
+            anchor.href = "#";
+            const tuiMatch = (st.tui || (st.uri && st.uri.match(/TUI\/([^/]+)$/)));
+            const tui = tuiMatch ? (Array.isArray(tuiMatch) ? tuiMatch[1] : tuiMatch) : "";
+            anchor.textContent = `${st.name || st.tui || ""}${tui ? ` (${tui})` : ""}`.trim();
+            anchor.addEventListener("click", function(e) {
+              e.preventDefault();
+              if (tui) fetchSemanticType(tui);
+            });
             return anchor.outerHTML;
           });
           tdValue.innerHTML = items.join(", ");
@@ -1309,6 +1323,104 @@ async function fetchCuisForCode(code, sab) {
   }
 }
 
+async function fetchSemanticType(tui, options = {}) {
+  scrollRecentRequestIntoView();
+  const { skipPushState = false } = options;
+  const apiKey = document.getElementById("api-key").value.trim();
+  if (!apiKey) {
+    alert("Please enter an API key first.");
+    return;
+  }
+
+  const resultsContainer = document.getElementById("output");
+  const infoTableBody = document.querySelector("#info-table tbody");
+  const recentRequestContainer = document.getElementById("recent-request-output");
+  const tableHead = document.querySelector("#info-table thead");
+
+  const resultsHeading = document.getElementById("results-heading");
+  if (resultsHeading) {
+    resultsHeading.textContent = "";
+    resultsHeading.classList.add("hidden");
+  }
+  const searchSummary = document.getElementById("search-summary");
+  if (searchSummary) {
+    searchSummary.textContent = "";
+    searchSummary.classList.add("hidden");
+  }
+
+  const baseUrl = `https://uts-ws.nlm.nih.gov/rest/semantic-network/semantic-types/${tui}`;
+  const apiUrlObj = new URL(baseUrl);
+  apiUrlObj.searchParams.append("apiKey", apiKey);
+  apiUrlObj.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
+
+  const displayApiUrl = new URL(apiUrlObj);
+  displayApiUrl.searchParams.set("apiKey", "***");
+  recentRequestContainer.innerHTML = colorizeUrl(displayApiUrl);
+  updateDocLink(apiUrlObj);
+
+  const addressUrl = new URL(window.location.pathname, window.location.origin);
+  addressUrl.searchParams.set("tui", tui);
+  if (!skipPushState) {
+    window.history.pushState({}, "", addressUrl.toString());
+  }
+  updateLocationHash(apiUrlObj);
+
+  resultsContainer.textContent = `Loading semantic type ${tui}...`;
+  infoTableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
+  tableHead.innerHTML = `<tr><th>Key</th><th>Value</th></tr>`;
+
+  try {
+    const response = await fetch(apiUrlObj, { method: "GET", headers: { Accept: "application/json" } });
+    if (!response.ok) {
+      const message = await response.text().catch(() => "");
+      throw new Error(`HTTP ${response.status}: ${message}`);
+    }
+    const data = await response.json();
+    resultsContainer.textContent = JSON.stringify(data, null, 2);
+
+    const detailObj = data && typeof data.result === "object" && !Array.isArray(data.result)
+      ? data.result
+      : typeof data === "object"
+      ? data
+      : null;
+
+    infoTableBody.innerHTML = "";
+
+    if (detailObj && typeof detailObj === "object") {
+      Object.keys(detailObj).forEach(key => {
+        const value = detailObj[key];
+        if (typeof value === "string" && value.toUpperCase() === "NONE") return;
+        const tr = document.createElement("tr");
+        const tdKey = document.createElement("td");
+        tdKey.textContent = key;
+        const tdValue = document.createElement("td");
+        if (typeof value === "string" && value.startsWith("http")) {
+          const link = document.createElement("a");
+          link.href = "#";
+          link.textContent = value;
+          link.addEventListener("click", function(e) {
+            e.preventDefault();
+            navigateToUmlsUrl(value, key);
+          });
+          tdValue.appendChild(link);
+        } else if (typeof value === "string") {
+          tdValue.textContent = value;
+        } else {
+          tdValue.textContent = JSON.stringify(value, null, 2);
+        }
+        tr.appendChild(tdKey);
+        tr.appendChild(tdValue);
+        infoTableBody.appendChild(tr);
+      });
+    }
+  } catch (error) {
+    resultsContainer.textContent = `Error fetching semantic type: ${error}`;
+    infoTableBody.innerHTML = '<tr><td colspan="2">Error loading semantic type.</td></tr>';
+  } finally {
+    scrollRecentRequestIntoView();
+  }
+}
+
 window.addEventListener("DOMContentLoaded", function () {
 
   // Preload MRRANK data for later sorting
@@ -1349,6 +1461,7 @@ window.addEventListener("DOMContentLoaded", function () {
     let related = params.get("related") || hashParams.related;
     let relatedId = params.get("relatedId") || hashParams.relatedId;
     let sab = params.get("sab") || hashParams.sab;
+    let tui = params.get("tui") || hashParams.tui;
 
     if (apiKey) {
       document.getElementById("api-key").value = apiKey;
@@ -1413,6 +1526,8 @@ window.addEventListener("DOMContentLoaded", function () {
       modalCurrentData.uri = null;
       modalCurrentData.returnIdType = "aui";
       fetchAuiDetails(aui, "", { skipPushState: fromPopState });
+    } else if (tui) {
+      fetchSemanticType(tui, { skipPushState: fromPopState });
     } else if (related && relatedId) {
       let fullUrl;
       if (sab) {
