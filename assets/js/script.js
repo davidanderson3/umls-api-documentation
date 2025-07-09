@@ -109,7 +109,18 @@ async function renderSearchResults(data, returnIdType) {
   const infoTable = document.getElementById("info-table");
   const noResultsMessage = document.getElementById("no-results-message");
 
-  resultsContainer.textContent = JSON.stringify(data, null, 2);
+  let displayData = data;
+  if (data && data.result && Array.isArray(data.result.results)) {
+    displayData = JSON.parse(JSON.stringify(data));
+    displayData.result.results = displayData.result.results.map((item) => {
+      const cleaned = { ...item };
+      Object.keys(cleaned).forEach((key) => {
+        if (/^(atom|relation)count$/i.test(key)) delete cleaned[key];
+      });
+      return cleaned;
+    });
+  }
+  resultsContainer.textContent = JSON.stringify(displayData, null, 2);
   infoTableBody.innerHTML = "";
 
   const results = data.result && data.result.results ? data.result.results : [];
