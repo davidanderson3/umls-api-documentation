@@ -1450,12 +1450,15 @@ window.addEventListener("DOMContentLoaded", function () {
     const apiKey = params.get("apiKey");
     const searchString = params.get("string");
     let returnIdType = params.get("returnIdType") || hashParams.returnIdType;
-    if (!returnIdType) {
-      returnIdType = "concept";
-    }
     const sabs = params.get("sabs") || hashParams.sabs;
     const inputType = params.get("inputType") || hashParams.inputType;
     const searchType = params.get("searchType") || hashParams.searchType;
+    if (inputType === "sourceUi" && searchType === "exact") {
+      returnIdType = "concept";
+    }
+    if (!returnIdType) {
+      returnIdType = "concept";
+    }
     let detail = params.get("detail") || hashParams.detail;
     if (detail === "concept") detail = "";
     let cui = params.get("cui") || hashParams.cui;
