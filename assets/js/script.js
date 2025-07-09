@@ -505,6 +505,10 @@ function navigateToUmlsUrl(url, key) {
           const cb = document.querySelector(`#vocab-container input[value="${v}"]`);
           if (cb) cb.checked = true;
         });
+      } else {
+        document.querySelectorAll("#vocab-container input").forEach((cb) => {
+          cb.checked = true;
+        });
       }
       if (typeof window.updateVocabVisibility === "function") {
         window.updateVocabVisibility();
@@ -1481,6 +1485,10 @@ window.addEventListener("DOMContentLoaded", function () {
       sabs.split(",").forEach(v => {
         const cb = document.querySelector(`#vocab-container input[value="${v}"]`);
         if (cb) cb.checked = true;
+      });
+    } else {
+      document.querySelectorAll("#vocab-container input").forEach(cb => {
+        cb.checked = true;
       });
     }
     updateVocabVisibility();
