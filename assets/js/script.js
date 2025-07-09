@@ -702,6 +702,14 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         tr.appendChild(col3);
         const col4 = document.createElement("td");
         col4.textContent = atom.code || "";
+        if (atom.code) {
+          col4.style.color = "blue";
+          col4.style.textDecoration = "underline";
+          col4.style.cursor = "pointer";
+          col4.addEventListener("click", () => {
+            fetchCuisForCode(atom.code, atom.rootSource);
+          });
+        }
         tr.appendChild(col4);
         infoTableBody.appendChild(tr);
       });
