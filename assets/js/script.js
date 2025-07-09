@@ -680,6 +680,10 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       detailArray = data.result.results;
     } else if (detailType && data.result && Array.isArray(data.result[detailType])) {
       detailArray = data.result[detailType];
+    } else if (data.result && typeof data.result === "object") {
+      // Some endpoints (e.g., atoms/preferred) return a single object
+      // instead of an array; normalize to an array for processing
+      detailArray = [data.result];
     }
     await loadMRRank();
     let sortedDetails = sortByMRRank(detailArray);
