@@ -36,6 +36,13 @@ async function loadMRRank() {
   loadMRRank.loaded = true;
 }
 
+function scrollRecentRequestIntoView() {
+  const recent = document.getElementById("recent-request");
+  if (recent) {
+    recent.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 function getMRRank(sab, tty) {
   if (!sab) return -1;
   if (tty && mrrankData.bySabTty[sab] && mrrankData.bySabTty[sab][tty] !== undefined) {
@@ -95,7 +102,6 @@ async function renderSearchResults(data, returnIdType) {
   const infoTableBody = document.querySelector("#info-table tbody");
   const tableHead = document.querySelector("#info-table thead");
 
-  const resultsHeading = document.getElementById("results-heading");
   if (resultsHeading) {
     resultsHeading.textContent = "";
     resultsHeading.classList.add("hidden");
@@ -158,6 +164,7 @@ async function renderSearchResults(data, returnIdType) {
 }
 
 async function searchUMLS(options = {}) {
+  scrollRecentRequestIntoView();
   const { skipPushState = false, useCache = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   const searchString = document.getElementById("query").value.trim();
@@ -165,7 +172,6 @@ async function searchUMLS(options = {}) {
   const selectedVocabularies =
     returnIdType === "code" ? getSelectedVocabularies() : [];
 
-  const resultsHeading = document.getElementById("results-heading");
   if (resultsHeading) {
     if (searchString) {
       resultsHeading.textContent = `Results for "${searchString}"`;
@@ -392,12 +398,6 @@ function navigateToUmlsUrl(url, key) {
       modalCurrentData.uri = baseParts.join("/");
       modalCurrentData.returnIdType = "code";
       fetchConceptDetails(parsed.code, parsed.detail || key.toLowerCase());
-    } else {
-      modalCurrentData.sab = null;
-      modalCurrentData.ui = parsed.cui;
-      modalCurrentData.uri = null;
-      modalCurrentData.returnIdType = "concept";
-      fetchConceptDetails(parsed.cui, parsed.detail || key.toLowerCase());
     } else if (parsed.type === "search") {
       const queryInput = document.getElementById("query");
       const returnSelector = document.getElementById("return-id-type");
@@ -405,12 +405,12 @@ function navigateToUmlsUrl(url, key) {
       if (returnSelector && parsed.params.get("returnIdType")) {
         returnSelector.value = parsed.params.get("returnIdType");
       }
-      document.querySelectorAll("#vocab-container input").forEach(cb => {
+      document.querySelectorAll("#vocab-container input").forEach((cb) => {
         cb.checked = false;
       });
       const sabs = parsed.params.get("sabs");
       if (sabs) {
-        sabs.split(",").forEach(v => {
+        sabs.split(",").forEach((v) => {
           const cb = document.querySelector(`#vocab-container input[value="${v}"]`);
           if (cb) cb.checked = true;
         });
@@ -419,6 +419,12 @@ function navigateToUmlsUrl(url, key) {
         window.updateVocabVisibility();
       }
       searchUMLS();
+    } else {
+      modalCurrentData.sab = null;
+      modalCurrentData.ui = parsed.cui;
+      modalCurrentData.uri = null;
+      modalCurrentData.returnIdType = "concept";
+      fetchConceptDetails(parsed.cui, parsed.detail || key.toLowerCase());
     }
   } else {
     fetchRelatedDetail(url, key.toLowerCase());
@@ -432,6 +438,7 @@ function getSelectedVocabularies() {
 }
 
 async function fetchConceptDetails(cui, detailType = "", options = {}) {
+  scrollRecentRequestIntoView();
   const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   const returnIdType = modalCurrentData.returnIdType ||
@@ -680,6 +687,7 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
 }
 
 async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {}) {
+  scrollRecentRequestIntoView();
   const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   if (!apiKey) {
