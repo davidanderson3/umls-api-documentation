@@ -165,7 +165,13 @@ async function renderSearchResults(data, returnIdType) {
 
 async function searchUMLS(options = {}) {
   scrollRecentRequestIntoView();
-  const { skipPushState = false, useCache = false } = options;
+  const {
+    skipPushState = false,
+    useCache = false,
+    release = "current",
+    searchType,
+    inputType,
+  } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   const searchString = document.getElementById("query").value.trim();
   const returnIdType = document.getElementById("return-id-type").value;
@@ -190,7 +196,10 @@ async function searchUMLS(options = {}) {
   const cacheKey = JSON.stringify({
     q: searchString,
     idType: returnIdType,
-    sabs: selectedVocabularies.join(",")
+    sabs: selectedVocabularies.join(","),
+    release,
+    searchType,
+    inputType,
   });
 
   const newUrl = new URL(window.location.pathname, window.location.origin);
@@ -200,6 +209,12 @@ async function searchUMLS(options = {}) {
   }
   if (selectedVocabularies.length > 0) {
     newUrl.searchParams.set("sabs", selectedVocabularies.join(","));
+  }
+  if (searchType) {
+    newUrl.searchParams.set("searchType", searchType);
+  }
+  if (inputType) {
+    newUrl.searchParams.set("inputType", inputType);
   }
   if (!skipPushState) {
     window.history.pushState({}, "", newUrl.toString());
@@ -231,13 +246,19 @@ async function searchUMLS(options = {}) {
   if (infoTable) infoTable.style.display = "";
   if (noResultsMessage) noResultsMessage.classList.add("hidden");
 
-  const url = new URL("https://uts-ws.nlm.nih.gov/rest/search/current");
+  const url = new URL(`https://uts-ws.nlm.nih.gov/rest/search/${release}`);
   url.searchParams.append("string", searchString);
   url.searchParams.append("returnIdType", returnIdType);
   url.searchParams.append("apiKey", apiKey);
   url.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
   if (selectedVocabularies.length > 0) {
     url.searchParams.append("sabs", selectedVocabularies.join(","));
+  }
+  if (searchType) {
+    url.searchParams.append("searchType", searchType);
+  }
+  if (inputType) {
+    url.searchParams.append("inputType", inputType);
   }
 
   const displayUrl = new URL(url);
@@ -356,6 +377,8 @@ function parseHash() {
         result.returnIdType = "concept";
       }
     }
+  } else if (parts[0] === "search") {
+    result.release = parts[1];
   }
   if (queryPart) {
     const sp = new URLSearchParams(queryPart);
@@ -420,7 +443,11 @@ function navigateToUmlsUrl(url, key) {
       if (typeof window.updateVocabVisibility === "function") {
         window.updateVocabVisibility();
       }
-      searchUMLS();
+      searchUMLS({
+        release: parsed.release || "current",
+        searchType: parsed.params.get("searchType"),
+        inputType: parsed.params.get("inputType"),
+      });
     } else {
       modalCurrentData.sab = null;
       modalCurrentData.ui = parsed.cui;
@@ -1017,10 +1044,13 @@ window.addEventListener("DOMContentLoaded", function () {
   function applyUrlParams(fromPopState = false) {
     const params = new URLSearchParams(window.location.search);
     const hashParams = parseHash();
+    const release = hashParams.release || "current";
     const apiKey = params.get("apiKey");
     const searchString = params.get("string");
     let returnIdType = params.get("returnIdType") || hashParams.returnIdType;
     const sabs = params.get("sabs") || hashParams.sabs;
+    const searchType = params.get("searchType") || hashParams.searchType;
+    const inputType = params.get("inputType") || hashParams.inputType;
     let detail = params.get("detail") || hashParams.detail;
     let cui = params.get("cui") || hashParams.cui;
     let code = params.get("code") || hashParams.code;
@@ -1086,7 +1116,13 @@ window.addEventListener("DOMContentLoaded", function () {
       }
       fetchRelatedDetail(fullUrl, related, sab, { skipPushState: fromPopState });
     } else if (searchString) {
-      searchUMLS({ skipPushState: fromPopState, useCache: fromPopState });
+      searchUMLS({
+        skipPushState: fromPopState,
+        useCache: fromPopState,
+        release,
+        searchType,
+        inputType,
+      });
   }
   }
 
