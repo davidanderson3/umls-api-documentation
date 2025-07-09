@@ -565,6 +565,49 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       // so stop processing after the key/value pairs have been added.
       return;
 
+    } else if (detailType === "sourceAtomClusters") {
+      tableHead.innerHTML = `<tr><th>Key</th><th>Value</th></tr>`;
+      const detailObj = data && typeof data.result === "object" && !Array.isArray(data.result)
+        ? data.result
+        : data;
+      if (!detailObj || typeof detailObj !== "object") {
+        infoTableBody.innerHTML = `<tr><td colspan="2">No sourceAtomClusters found for this ${cui}.</td></tr>`;
+        renderConceptSummary(null);
+        return;
+      }
+
+      renderConceptSummary(detailObj);
+
+      Object.keys(detailObj).forEach(key => {
+        if (/atomcount/i.test(key)) return;
+        const value = detailObj[key];
+        if (typeof value === "string" && value.toUpperCase() === "NONE") return;
+        const tr = document.createElement("tr");
+        const tdKey = document.createElement("td");
+        tdKey.textContent = key;
+        const tdValue = document.createElement("td");
+        if (typeof value === "string" && value.startsWith("http")) {
+          const link = document.createElement("a");
+          link.href = "#";
+          link.textContent = value;
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            navigateToUmlsUrl(value, key);
+          });
+          tdValue.appendChild(link);
+        } else if (typeof value === "string") {
+          tdValue.textContent = value;
+        } else {
+          tdValue.textContent = JSON.stringify(value, null, 2);
+        }
+        tr.appendChild(tdKey);
+        tr.appendChild(tdValue);
+        infoTableBody.appendChild(tr);
+      });
+
+      // Skip additional list-style rows for sourceAtomClusters
+      return;
+
     } else if (detailType === "atoms") {
       tableHead.innerHTML = `<tr><th>Atom</th><th>Term Type</th><th>Root Source</th></tr>`;
     } else if (detailType === "definitions") {
