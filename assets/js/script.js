@@ -93,7 +93,7 @@ function extractCui(concept) {
   return "";
 }
 
-function renderConceptSummary(concept) {
+function renderConceptSummary(concept, detailType = "") {
   const summary = document.getElementById("concept-summary");
   if (!summary) return;
   if (!concept || typeof concept !== "object") {
@@ -104,13 +104,17 @@ function renderConceptSummary(concept) {
 
   summary.innerHTML = "";
   const header = document.createElement("h2");
-  let headerText = concept.name
-    ? `${concept.name} (${concept.ui || ""})`
-    : concept.ui || "";
-  if (concept.rootSource) {
-    headerText += ` - ${concept.rootSource} code`;
+  const name = concept.name || modalCurrentData.name || "";
+  const ui = concept.ui || modalCurrentData.ui || "";
+  let headerText = name ? `${name} (${ui})` : ui;
+  const source = concept.rootSource || modalCurrentData.sab;
+  if (source) {
+    headerText += ` - ${source} code`;
   }
-  header.textContent = headerText;
+  if (detailType) {
+    headerText += ` ${detailType}`;
+  }
+  header.textContent = headerText.trim();
   summary.appendChild(header);
 
   // The detailed table already includes these values so we omit them from the
@@ -590,7 +594,7 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
     ? `Loading ${detailType} for ${cui}...`
     : `Loading details for ${cui}...`;
   if (detailType) {
-    renderConceptSummary(null);
+    renderConceptSummary({ name: modalCurrentData.name, ui: cui, rootSource: modalCurrentData.sab }, detailType);
   }
   const loadingColspan =
     detailType === "relations" ? 5 :
@@ -620,7 +624,15 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         ? data
         : null;
 
-    renderConceptSummary(detailObj && typeof detailObj === "object" ? detailObj : null);
+    if (detailType) {
+      renderConceptSummary({
+        name: modalCurrentData.name || (detailObj && detailObj.name),
+        ui: cui,
+        rootSource: modalCurrentData.sab || (detailObj && detailObj.rootSource)
+      }, detailType);
+    } else {
+      renderConceptSummary(detailObj && typeof detailObj === "object" ? detailObj : null);
+    }
 
     infoTableBody.innerHTML = "";
 
@@ -1024,7 +1036,11 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
         ? data
         : null;
 
-    renderConceptSummary(detailObj && typeof detailObj === "object" ? detailObj : null);
+    renderConceptSummary({
+      name: modalCurrentData.name || (detailObj && detailObj.name),
+      ui: aui,
+      rootSource: modalCurrentData.sab || (detailObj && detailObj.rootSource)
+    }, detailType);
 
     infoTableBody.innerHTML = "";
 
@@ -1139,7 +1155,11 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
         ? data
         : null;
 
-    renderConceptSummary(detailObj && typeof detailObj === "object" ? detailObj : null);
+    renderConceptSummary({
+      name: modalCurrentData.name || (detailObj && detailObj.name),
+      ui: modalCurrentData.ui,
+      rootSource: modalCurrentData.sab || (detailObj && detailObj.rootSource)
+    }, relatedType);
 
     infoTableBody.innerHTML = "";
 
