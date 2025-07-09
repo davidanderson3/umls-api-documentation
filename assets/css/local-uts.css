@@ -122,7 +122,7 @@ pre {
 
 .umls-app__results {
   margin-top: 1rem;
-  padding: 0.5rem;
+  padding: 0;
   background: #f9f9f9;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -130,6 +130,16 @@ pre {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+}
+
+.results-inner {
+  padding: 1rem;
+}
+
+.umls-app__table {
+  margin: 0;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 
@@ -190,13 +200,15 @@ pre {
   display: none !important;
 }
 
+
 .raw-data-details {
-  margin-bottom: 1rem;
+  margin: 0;
+  padding: 0;
 }
 
 .concept-summary {
-  margin: 1rem 0;
-  padding: 0.5rem 1rem;
+  margin: 0;
+  padding: 0;
   border: 1px solid #ddd;
   border-radius: 4px;
   background: #fff;
@@ -207,12 +219,14 @@ pre {
 }
 
 #results-heading {
-  margin: 0.5rem 0;
+  margin: 0;
+  padding: 0;
   text-align: center;
 }
 
 #search-summary {
-  margin: 0.5rem 0;
+  margin: 0;
+  padding: 0;
   text-align: center;
 }
 
