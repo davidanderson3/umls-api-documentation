@@ -536,7 +536,11 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   if (detailType) {
     renderConceptSummary(null);
   }
-  const loadingColspan = detailType === "relations" ? 5 : detailType === "definitions" ? 2 : detailType ? 3 : 2;
+  const loadingColspan =
+    detailType === "relations" ? 5 :
+    detailType === "definitions" ? 2 :
+    detailType === "atoms" ? 4 :
+    detailType ? 3 : 2;
   infoTableBody.innerHTML = `<tr><td colspan="${loadingColspan}">Loading...</td></tr>`;
 
   try {
@@ -641,7 +645,7 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       return;
 
     } else if (detailType === "atoms") {
-      tableHead.innerHTML = `<tr><th>Atom</th><th>Term Type</th><th>Root Source</th></tr>`;
+      tableHead.innerHTML = `<tr><th>Atom</th><th>Term Type</th><th>Root Source</th><th>Code</th></tr>`;
     } else if (detailType === "definitions") {
       tableHead.innerHTML = `<tr><th>Definition</th><th>Root Source</th></tr>`;
     } else if (detailType === "attributes") {
@@ -666,7 +670,9 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
     }
     if (!Array.isArray(sortedDetails) || sortedDetails.length === 0) {
       const emptyColspan =
-        detailType === "relations" ? 5 : detailType === "definitions" ? 2 : 3;
+        detailType === "relations" ? 5 :
+        detailType === "definitions" ? 2 :
+        detailType === "atoms" ? 4 : 3;
       infoTableBody.innerHTML = `<tr><td colspan="${emptyColspan}">No ${detailType} found for this ${cui}.</td></tr>`;
       return;
     }
@@ -683,6 +689,9 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         const col3 = document.createElement("td");
         col3.textContent = atom.rootSource || "(no rootSource)";
         tr.appendChild(col3);
+        const col4 = document.createElement("td");
+        col4.textContent = atom.code || "";
+        tr.appendChild(col4);
         infoTableBody.appendChild(tr);
       });
     } else if (detailType === "definitions") {
@@ -826,7 +835,9 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   } catch (error) {
     resultsContainer.textContent = `Error fetching ${detailType}: ${error}`;
     const errorColspan =
-      detailType === "relations" ? 5 : detailType === "definitions" ? 2 : 3;
+      detailType === "relations" ? 5 :
+      detailType === "definitions" ? 2 :
+      detailType === "atoms" ? 4 : 3;
     infoTableBody.innerHTML = `<tr><td colspan="${errorColspan}">Error loading ${detailType}.</td></tr>`;
   }
 }
