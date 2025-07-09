@@ -1281,6 +1281,9 @@ window.addEventListener("DOMContentLoaded", function () {
     const apiKey = params.get("apiKey");
     const searchString = params.get("string");
     let returnIdType = params.get("returnIdType") || hashParams.returnIdType;
+    if (!returnIdType) {
+      returnIdType = "concept";
+    }
     const sabs = params.get("sabs") || hashParams.sabs;
     const inputType = params.get("inputType") || hashParams.inputType;
     const searchType = params.get("searchType") || hashParams.searchType;
