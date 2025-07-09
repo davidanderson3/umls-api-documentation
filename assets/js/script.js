@@ -751,10 +751,11 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         col1.style.cursor = "pointer";
         col1.textContent = relation.relatedFromIdName || modalCurrentData.name || "(no relatedFromIdName)";
         col1.addEventListener("click", function () {
+          const fromId = relation.relatedFromId || modalCurrentData.ui;
           if (returnIdType === "code") {
-            fetchRelatedDetail(relation.relatedFromId, "from", relation.rootSource);
+            fetchRelatedDetail(fromId, "from", relation.rootSource);
           } else {
-            fetchRelatedDetail(relation.relatedFromId, "from");
+            fetchRelatedDetail(fromId, "from");
           }
         });
         tr.appendChild(col1);
