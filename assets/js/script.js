@@ -168,11 +168,13 @@ async function renderSearchResults(data, returnIdType) {
     uiTd.addEventListener("click", () => {
       modalCurrentData.ui = item.ui;
       modalCurrentData.name = item.name || null;
-      if (returnIdType === "code") {
-        modalCurrentData.sab = item.rootSource;
-        modalCurrentData.uri = item.uri || null;
-        modalCurrentData.returnIdType = "code";
-      } else {
+        if (returnIdType === "code") {
+          modalCurrentData.sab = item.rootSource;
+          modalCurrentData.uri = item.uri
+            ? item.uri.replace(/\/code$/, "")
+            : null;
+          modalCurrentData.returnIdType = "code";
+        } else {
         modalCurrentData.sab = null;
         modalCurrentData.uri = null;
         modalCurrentData.returnIdType = "concept";
@@ -373,7 +375,11 @@ function updateDocLink(urlObject) {
 function stripBaseUrl(fullUrl) {
   if (!fullUrl) return "";
   const parts = fullUrl.split("/");
-  return parts.length ? parts[parts.length - 1] : fullUrl;
+  let last = parts.length ? parts[parts.length - 1] : fullUrl;
+  if (last === "code" && parts.length > 1) {
+    last = parts[parts.length - 2];
+  }
+  return last;
 }
 
 function parseHash() {
