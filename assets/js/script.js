@@ -4,7 +4,6 @@ let modalCurrentData = {
   sab: null,
   name: null,
   uri: null,
-  release: "current",
   returnIdType: "concept"
 };
 
@@ -60,12 +59,6 @@ function sortByMRRank(arr, sabKey = 'rootSource', ttyKey = 'termType') {
   return arr
     .slice()
     .sort((a, b) => getMRRank(b[sabKey], b[ttyKey]) - getMRRank(a[sabKey], a[ttyKey]));
-}
-
-function extractReleaseFromUri(uri) {
-  if (!uri) return null;
-  const match = uri.match(/\/content\/([^/]+)/);
-  return match ? match[1] : null;
 }
 
 // Sort array alphabetically by additionalRelationLabel
@@ -146,12 +139,10 @@ async function renderSearchResults(data, returnIdType) {
       if (returnIdType === "code") {
         modalCurrentData.sab = item.rootSource;
         modalCurrentData.uri = item.uri || null;
-        modalCurrentData.release = extractReleaseFromUri(item.uri) || "current";
         modalCurrentData.returnIdType = "code";
       } else {
         modalCurrentData.sab = null;
         modalCurrentData.uri = null;
-        modalCurrentData.release = "current";
         modalCurrentData.returnIdType = "concept";
       }
       fetchConceptDetails(item.ui, "");
@@ -344,9 +335,6 @@ function parseHash() {
   const parts = pathPart.split("/").filter(Boolean);
   const result = {};
   if (parts[0] === "content") {
-    if (parts.length >= 2) {
-      result.release = parts[1];
-    }
     if (parts[2] === "source") {
       if (parts.length >= 6) {
         result.sab = parts[3];
@@ -381,13 +369,13 @@ function parseHash() {
 function parseUmlsUrl(url) {
   try {
     const u = new URL(url, window.location.href);
-    let m = u.pathname.match(/\/content\/([^/]+)\/CUI\/([^/]+)(?:\/(.+))?$/);
+    let m = u.pathname.match(/\/content\/[^/]+\/CUI\/([^/]+)(?:\/(.+))?$/);
     if (m) {
-      return { type: "concept", release: m[1], cui: m[2], detail: m[3] || "" };
+      return { type: "concept", cui: m[1], detail: m[2] || "" };
     }
-    m = u.pathname.match(/\/content\/([^/]+)\/source\/([^/]+)\/([^/]+)(?:\/(.+))?$/);
+    m = u.pathname.match(/\/content\/[^/]+\/source\/([^/]+)\/([^/]+)(?:\/(.+))?$/);
     if (m) {
-      return { type: "code", release: m[1], sab: m[2], code: m[3], detail: m[4] || "" };
+      return { type: "code", sab: m[1], code: m[2], detail: m[3] || "" };
     }
     m = u.pathname.match(/\/search\/([^/]+)\/?$/);
     if (m) {
@@ -405,7 +393,6 @@ function navigateToUmlsUrl(url, key) {
     if (parsed.type === "code") {
       modalCurrentData.sab = parsed.sab;
       modalCurrentData.ui = parsed.code;
-      modalCurrentData.release = parsed.release || "current";
       const baseParts = url.split("/");
       if (parsed.detail) {
         baseParts.splice(-parsed.detail.split("/").length, parsed.detail.split("/").length);
@@ -438,7 +425,6 @@ function navigateToUmlsUrl(url, key) {
       modalCurrentData.sab = null;
       modalCurrentData.ui = parsed.cui;
       modalCurrentData.uri = null;
-      modalCurrentData.release = parsed.release || "current";
       modalCurrentData.returnIdType = "concept";
       fetchConceptDetails(parsed.cui, parsed.detail || key.toLowerCase());
     }
@@ -476,17 +462,16 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   }
 
   let baseUrl;
-  const release = modalCurrentData.release || "current";
   if (returnIdType === "code") {
     if (modalCurrentData.uri) {
       baseUrl = modalCurrentData.uri + (detailType ? "/" + detailType : "");
     } else if (modalCurrentData.sab) {
-      baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/${release}/source/${modalCurrentData.sab}/${cui}` + (detailType ? `/${detailType}` : "");
+      baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${modalCurrentData.sab}/${cui}` + (detailType ? `/${detailType}` : "");
     } else {
-      baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/${release}/source/${cui}` + (detailType ? `/${detailType}` : "");
+      baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${cui}` + (detailType ? `/${detailType}` : "");
     }
   } else {
-    baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/${release}/CUI/${cui}` + (detailType ? `/${detailType}` : "");
+    baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${cui}` + (detailType ? `/${detailType}` : "");
   }
   const apiUrlObj = new URL(baseUrl);
   apiUrlObj.searchParams.append("apiKey", apiKey);
@@ -500,7 +485,6 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   const addressUrl = new URL(window.location.pathname, window.location.origin);
   addressUrl.searchParams.set("detail", detailType);
   addressUrl.searchParams.set("returnIdType", returnIdType);
-  addressUrl.searchParams.set("release", release);
   if (returnIdType === "code") {
     addressUrl.searchParams.set("code", stripBaseUrl(modalCurrentData.uri));
     if (modalCurrentData.sab) {
@@ -792,13 +776,11 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
           modalCurrentData.name = item.name || null;
           if (item.rootSource) {
             modalCurrentData.sab = item.rootSource;
-            modalCurrentData.uri = item.uri || null;
-            modalCurrentData.release = extractReleaseFromUri(item.uri) || modalCurrentData.release || "current";
+            modalCurrentData.uri = null;
             modalCurrentData.returnIdType = "code";
           } else {
             modalCurrentData.sab = null;
-            modalCurrentData.uri = item.uri || null;
-            modalCurrentData.release = extractReleaseFromUri(item.uri) || modalCurrentData.release || "current";
+            modalCurrentData.uri = null;
             modalCurrentData.returnIdType = "concept";
           }
           fetchConceptDetails(item.ui, "");
@@ -1052,7 +1034,6 @@ window.addEventListener("DOMContentLoaded", function () {
     let related = params.get("related") || hashParams.related;
     let relatedId = params.get("relatedId") || hashParams.relatedId;
     let sab = params.get("sab") || hashParams.sab;
-    let release = params.get("release") || hashParams.release || "current";
 
     if (apiKey) {
       document.getElementById("api-key").value = apiKey;
@@ -1081,14 +1062,12 @@ window.addEventListener("DOMContentLoaded", function () {
       if (returnSelector.value === "code" && code && sab) {
         modalCurrentData.sab = sab;
         modalCurrentData.ui = code;
-        modalCurrentData.uri = `https://uts-ws.nlm.nih.gov/rest/content/${release}/source/${sab}/${code}`;
-        modalCurrentData.release = release;
+        modalCurrentData.uri = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${code}`;
         modalCurrentData.returnIdType = "code";
       } else {
         modalCurrentData.sab = null;
         modalCurrentData.ui = cui;
         modalCurrentData.uri = null;
-        modalCurrentData.release = release;
         modalCurrentData.returnIdType = "concept";
       }
       fetchConceptDetails(code || cui, detail, { skipPushState: fromPopState });
@@ -1096,23 +1075,21 @@ window.addEventListener("DOMContentLoaded", function () {
       if (returnSelector.value === "code") {
         modalCurrentData.sab = sab;
         modalCurrentData.ui = code;
-        modalCurrentData.uri = `https://uts-ws.nlm.nih.gov/rest/content/${release}/source/${sab}/${code}`;
-        modalCurrentData.release = release;
+        modalCurrentData.uri = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${code}`;
         modalCurrentData.returnIdType = "code";
       } else {
         modalCurrentData.sab = null;
         modalCurrentData.ui = cui;
         modalCurrentData.uri = null;
-        modalCurrentData.release = release;
         modalCurrentData.returnIdType = "concept";
       }
       fetchConceptDetails(code || cui, "", { skipPushState: fromPopState });
     } else if (related && relatedId) {
       let fullUrl;
       if (sab) {
-        fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/${release}/source/${sab}/${relatedId}`;
+        fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${relatedId}`;
       } else {
-        fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/${release}/CUI/${relatedId}`;
+        fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${relatedId}`;
       }
       fetchRelatedDetail(fullUrl, related, sab, { skipPushState: fromPopState });
     } else if (searchString) {
