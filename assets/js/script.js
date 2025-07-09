@@ -727,10 +727,12 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         const col4 = document.createElement("td");
         if (atom.code) {
           const link = document.createElement("a");
-          link.href = atom.code;
-          link.target = "_blank";
-          link.rel = "noopener";
+          link.href = "#";
           link.textContent = stripBaseUrl(atom.code);
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            navigateToUmlsUrl(atom.code, "code");
+          });
           col4.appendChild(link);
         } else {
           col4.textContent = "";
