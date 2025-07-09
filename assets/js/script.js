@@ -765,13 +765,18 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         col1.style.color = "blue";
         col1.style.textDecoration = "underline";
         col1.style.cursor = "pointer";
+        const fromNameFallback = !relation.relatedFromIdName;
         col1.textContent = relation.relatedFromIdName || modalCurrentData.name || "(no relatedFromIdName)";
         col1.addEventListener("click", function () {
-          const fromId = relation.relatedFromId || modalCurrentData.ui;
-          if (returnIdType === "code") {
-            fetchRelatedDetail(fromId, "from", relation.rootSource);
+          if (fromNameFallback) {
+            fetchConceptDetails(modalCurrentData.ui, "");
           } else {
-            fetchRelatedDetail(fromId, "from");
+            const fromId = relation.relatedFromId || modalCurrentData.ui;
+            if (returnIdType === "code") {
+              fetchRelatedDetail(fromId, "from", relation.rootSource);
+            } else {
+              fetchRelatedDetail(fromId, "from");
+            }
           }
         });
         tr.appendChild(col1);
