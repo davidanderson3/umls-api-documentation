@@ -80,6 +80,18 @@ function sortByAdditionalRelationLabel(arr) {
     });
 }
 
+function extractCui(concept) {
+  if (!concept) return "";
+  if (typeof concept === "string") {
+    const m = concept.match(/\/CUI\/([^/]+)/);
+    return m ? m[1] : concept;
+  }
+  if (typeof concept === "object" && concept.ui) {
+    return concept.ui;
+  }
+  return "";
+}
+
 function renderConceptSummary(concept) {
   const summary = document.getElementById("concept-summary");
   if (!summary) return;
@@ -735,7 +747,7 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         col2.textContent = atom.name || "";
         tr.appendChild(col2);
         const col3 = document.createElement("td");
-        col3.textContent = (atom.concept && atom.concept.ui) || atom.cui || "";
+        col3.textContent = extractCui(atom.concept) || atom.cui || "";
         tr.appendChild(col3);
         infoTableBody.appendChild(tr);
       });
