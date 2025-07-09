@@ -109,7 +109,18 @@ async function renderSearchResults(data, returnIdType) {
   const infoTable = document.getElementById("info-table");
   const noResultsMessage = document.getElementById("no-results-message");
 
-  resultsContainer.textContent = JSON.stringify(data, null, 2);
+  let displayData = data;
+  if (data && data.result && Array.isArray(data.result.results)) {
+    displayData = JSON.parse(JSON.stringify(data));
+    displayData.result.results = displayData.result.results.map((item) => {
+      const cleaned = { ...item };
+      Object.keys(cleaned).forEach((key) => {
+        if (/^(atom|relation)count$/i.test(key)) delete cleaned[key];
+      });
+      return cleaned;
+    });
+  }
+  resultsContainer.textContent = JSON.stringify(displayData, null, 2);
   infoTableBody.innerHTML = "";
 
   const results = data.result && data.result.results ? data.result.results : [];
@@ -305,7 +316,10 @@ function updateDocLink(urlObject) {
   }
 
   const section = pathParts[1];
-  const docSection = section === "content" ? "concept" : section;
+  let docSection = section === "content" ? "concept" : section;
+  if (section === "content" && pathParts.includes("AUI")) {
+    docSection = "atom";
+  }
   let docUrl = `https://documentation.uts.nlm.nih.gov/rest/${docSection}/index.html`;
 
   const anchorTargets = [
@@ -383,6 +397,10 @@ function parseUmlsUrl(url) {
     m = u.pathname.match(/\/content\/[^/]+\/source\/([^/]+)\/([^/]+)(?:\/(.+))?$/);
     if (m) {
       return { type: "code", sab: m[1], code: m[2], detail: m[3] || "" };
+    }
+    m = u.pathname.match(/\/content\/[^/]+\/AUI\/([^/]+)(?:\/(.+))?$/);
+    if (m) {
+      return { type: "aui", aui: m[1], detail: m[2] || "" };
     }
     m = u.pathname.match(/\/search\/([^/]+)\/?$/);
     if (m) {
@@ -806,6 +824,99 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   }
 }
 
+async function fetchAuiDetails(aui, detailType = "", options = {}) {
+  scrollRecentRequestIntoView();
+  const { skipPushState = false } = options;
+  const apiKey = document.getElementById("api-key").value.trim();
+  if (!apiKey) {
+    alert("Please enter an API key first.");
+    return;
+  }
+
+  const resultsContainer = document.getElementById("output");
+  const infoTableBody = document.querySelector("#info-table tbody");
+  const recentRequestContainer = document.getElementById("recent-request-output");
+  const tableHead = document.querySelector("#info-table thead");
+
+  const resultsHeading = document.getElementById("results-heading");
+  if (resultsHeading) {
+    resultsHeading.textContent = "";
+    resultsHeading.classList.add("hidden");
+  }
+
+  const baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/AUI/${aui}` + (detailType ? `/${detailType}` : "");
+  const apiUrlObj = new URL(baseUrl);
+  apiUrlObj.searchParams.append("apiKey", apiKey);
+  apiUrlObj.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
+
+  const displayApiUrl = new URL(apiUrlObj);
+  displayApiUrl.searchParams.set("apiKey", "***");
+  recentRequestContainer.innerHTML = colorizeUrl(displayApiUrl);
+  updateDocLink(apiUrlObj);
+
+  const addressUrl = new URL(window.location.pathname, window.location.origin);
+  addressUrl.searchParams.set("aui", aui);
+  addressUrl.searchParams.set("detail", detailType);
+  if (!skipPushState) {
+    window.history.pushState({}, "", addressUrl.toString());
+  }
+  updateLocationHash(apiUrlObj);
+
+  resultsContainer.textContent = detailType
+    ? `Loading ${detailType} for ${aui}...`
+    : `Loading details for ${aui}...`;
+  infoTableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
+  tableHead.innerHTML = `<tr><th>Key</th><th>Value</th></tr>`;
+
+  try {
+    const response = await fetch(apiUrlObj, {
+      method: "GET",
+      headers: { Accept: "application/json" }
+    });
+    if (!response.ok) {
+      const message = await response.text().catch(() => "");
+      throw new Error(`HTTP ${response.status}: ${message}`);
+    }
+    const data = await response.json();
+    resultsContainer.textContent = JSON.stringify(data, null, 2);
+    infoTableBody.innerHTML = "";
+
+    const detailObj = data && typeof data.result === "object" && !Array.isArray(data.result)
+      ? data.result
+      : data;
+    if (detailObj && typeof detailObj === "object") {
+      Object.keys(detailObj).forEach(key => {
+        const value = detailObj[key];
+        if (typeof value === "string" && value.toUpperCase() === "NONE") return;
+        const tr = document.createElement("tr");
+        const tdKey = document.createElement("td");
+        tdKey.textContent = key;
+        const tdValue = document.createElement("td");
+        if (typeof value === "string" && value.startsWith("http")) {
+          const link = document.createElement("a");
+          link.href = "#";
+          link.textContent = value;
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            navigateToUmlsUrl(value, key);
+          });
+          tdValue.appendChild(link);
+        } else if (typeof value === "string") {
+          tdValue.textContent = value;
+        } else {
+          tdValue.textContent = JSON.stringify(value, null, 2);
+        }
+        tr.appendChild(tdKey);
+        tr.appendChild(tdValue);
+        infoTableBody.appendChild(tr);
+      });
+    }
+  } catch (error) {
+    resultsContainer.textContent = `Error fetching ${detailType || "details"}: ${error}`;
+    infoTableBody.innerHTML = `<tr><td colspan="2">Error loading ${detailType || "details"}.</td></tr>`;
+  }
+}
+
 async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {}) {
   scrollRecentRequestIntoView();
   const { skipPushState = false } = options;
@@ -814,6 +925,16 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
     alert("Please enter an API key first.");
     return;
   }
+
+  // If a bare UI/code is passed in, construct the full URL
+  if (!/^https?:\/\//i.test(apiUrl)) {
+    if (rootSource) {
+      apiUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${rootSource}/${apiUrl}`;
+    } else {
+      apiUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${apiUrl}`;
+    }
+  }
+
   let urlObj = new URL(apiUrl);
   urlObj.searchParams.append("apiKey", apiKey);
   urlObj.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
@@ -1032,6 +1153,7 @@ window.addEventListener("DOMContentLoaded", function () {
     let detail = params.get("detail") || hashParams.detail;
     let cui = params.get("cui") || hashParams.cui;
     let code = params.get("code") || hashParams.code;
+    let aui = params.get("aui") || hashParams.aui;
     let related = params.get("related") || hashParams.related;
     let relatedId = params.get("relatedId") || hashParams.relatedId;
     let sab = params.get("sab") || hashParams.sab;
@@ -1060,7 +1182,13 @@ window.addEventListener("DOMContentLoaded", function () {
     updateVocabVisibility();
 
     if (detail) {
-      if (returnSelector.value === "code" && code && sab) {
+      if (aui) {
+        modalCurrentData.sab = null;
+        modalCurrentData.ui = aui;
+        modalCurrentData.uri = null;
+        modalCurrentData.returnIdType = "aui";
+        fetchAuiDetails(aui, detail, { skipPushState: fromPopState });
+      } else if (returnSelector.value === "code" && code && sab) {
         modalCurrentData.sab = sab;
         modalCurrentData.ui = code;
         modalCurrentData.uri = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${code}`;
@@ -1071,7 +1199,9 @@ window.addEventListener("DOMContentLoaded", function () {
         modalCurrentData.uri = null;
         modalCurrentData.returnIdType = "concept";
       }
-      fetchConceptDetails(code || cui, detail, { skipPushState: fromPopState });
+      if (!aui) {
+        fetchConceptDetails(code || cui, detail, { skipPushState: fromPopState });
+      }
     } else if ((returnSelector.value === "code" && code && sab) || (returnSelector.value !== "code" && cui)) {
       if (returnSelector.value === "code") {
         modalCurrentData.sab = sab;
@@ -1085,6 +1215,12 @@ window.addEventListener("DOMContentLoaded", function () {
         modalCurrentData.returnIdType = "concept";
       }
       fetchConceptDetails(code || cui, "", { skipPushState: fromPopState });
+    } else if (aui) {
+      modalCurrentData.sab = null;
+      modalCurrentData.ui = aui;
+      modalCurrentData.uri = null;
+      modalCurrentData.returnIdType = "aui";
+      fetchAuiDetails(aui, "", { skipPushState: fromPopState });
     } else if (related && relatedId) {
       let fullUrl;
       if (sab) {
