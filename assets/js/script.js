@@ -354,25 +354,30 @@ function updateDocLink(urlObject) {
     return;
   }
 
-  const section = pathParts[1];
-  let docSection = section === "content" ? "concept" : section;
-  if (section === "content" && pathParts.includes("AUI")) {
-    docSection = "atom";
-  }
-  let docUrl = `https://documentation.uts.nlm.nih.gov/rest/${docSection}/index.html`;
+  const anchorDocMap = {
+    atoms: "concept",
+    definitions: "concept",
+    relations: "concept",
+    parents: "concept",
+    children: "concept",
+    ancestors: "concept",
+    descendants: "concept",
+    cuis: "search"
+  };
 
-  const anchorTargets = [
-    "atoms",
-    "definitions",
-    "relations",
-    "parents",
-    "children",
-    "ancestors",
-    "descendants",
-    "cuis"
-  ];
   const last = pathParts[pathParts.length - 1];
-  if (anchorTargets.includes(last)) {
+  let docSection = anchorDocMap[last];
+
+  if (!docSection) {
+    const section = pathParts[1];
+    docSection = section === "content" ? "concept" : section;
+    if (section === "content" && pathParts.includes("AUI")) {
+      docSection = "atom";
+    }
+  }
+
+  let docUrl = `https://documentation.uts.nlm.nih.gov/rest/${docSection}/index.html`;
+  if (anchorDocMap[last]) {
     docUrl += `#${last}`;
   }
 
