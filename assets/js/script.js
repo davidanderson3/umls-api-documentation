@@ -108,6 +108,7 @@ async function renderSearchResults(data, returnIdType) {
   const resultsContainer = document.getElementById("output");
   const infoTableBody = document.querySelector("#info-table tbody");
   const tableHead = document.querySelector("#info-table thead");
+  const resultsHeading = document.getElementById("results-heading");
 
   if (resultsHeading) {
     resultsHeading.textContent = "";
@@ -190,6 +191,7 @@ async function searchUMLS(options = {}) {
   const returnIdType = document.getElementById("return-id-type").value;
   const selectedVocabularies =
     returnIdType === "code" ? getSelectedVocabularies() : [];
+  const resultsHeading = document.getElementById("results-heading");
 
   if (resultsHeading) {
     if (searchString) {
@@ -228,8 +230,6 @@ async function searchUMLS(options = {}) {
   const infoTableBody = document.querySelector("#info-table tbody");
   const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
-
-  const resultsHeading = document.getElementById("results-heading");
   if (resultsHeading) {
     resultsHeading.textContent = "";
     resultsHeading.classList.add("hidden");
