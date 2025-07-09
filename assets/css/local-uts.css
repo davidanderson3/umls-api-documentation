@@ -210,23 +210,22 @@ pre {
   width: 100%;
 }
 
-.concept-summary {
-  margin: 0;
-  padding: 0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: #fff;
-}
-.concept-summary h2 {
-  margin-top: 0;
-  font-size: 1.2em;
-}
-
 #results-heading {
   margin: 0;
   padding: 0;
   text-align: left;
   width: 100%;
+  padding-top: 0.5rem;
+}
+
+.concept-summary {
+  margin: 0;
+  padding: 0;
+}
+.concept-summary h2 {
+  margin-top: 0;
+  font-size: 1.2em;
+  padding-top: 0.5rem;
 }
 
 #search-summary {
