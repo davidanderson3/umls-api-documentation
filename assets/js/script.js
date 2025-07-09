@@ -662,7 +662,14 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         </tr>`;
     }
 
-    const detailArray = Array.isArray(data.result) ? data.result : [];
+    let detailArray = [];
+    if (Array.isArray(data.result)) {
+      detailArray = data.result;
+    } else if (data.result && Array.isArray(data.result.results)) {
+      detailArray = data.result.results;
+    } else if (detailType && data.result && Array.isArray(data.result[detailType])) {
+      detailArray = data.result[detailType];
+    }
     await loadMRRank();
     let sortedDetails = sortByMRRank(detailArray);
     if (detailType === "relations") {
