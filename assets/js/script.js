@@ -540,6 +540,7 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
     detailType === "relations" ? 5 :
     detailType === "definitions" ? 2 :
     detailType === "atoms" ? 4 :
+    detailType === "atoms/preferred" ? 3 :
     detailType ? 3 : 2;
   infoTableBody.innerHTML = `<tr><td colspan="${loadingColspan}">Loading...</td></tr>`;
 
@@ -644,6 +645,8 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       // Skip additional list-style rows for sourceAtomClusters
       return;
 
+    } else if (detailType === "atoms/preferred") {
+      tableHead.innerHTML = `<tr><th>UI</th><th>Name</th><th>CUI</th></tr>`;
     } else if (detailType === "atoms") {
       tableHead.innerHTML = `<tr><th>Atom</th><th>Term Type</th><th>Root Source</th><th>Code</th></tr>`;
     } else if (detailType === "definitions") {
@@ -679,7 +682,8 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       const emptyColspan =
         detailType === "relations" ? 5 :
         detailType === "definitions" ? 2 :
-        detailType === "atoms" ? 4 : 3;
+        detailType === "atoms" ? 4 :
+        detailType === "atoms/preferred" ? 3 : 3;
       infoTableBody.innerHTML = `<tr><td colspan="${emptyColspan}">No ${detailType} found for this ${cui}.</td></tr>`;
       return;
     }
@@ -699,6 +703,20 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         const col4 = document.createElement("td");
         col4.textContent = atom.code || "";
         tr.appendChild(col4);
+        infoTableBody.appendChild(tr);
+      });
+    } else if (detailType === "atoms/preferred") {
+      sortedDetails.forEach((atom) => {
+        const tr = document.createElement("tr");
+        const col1 = document.createElement("td");
+        col1.textContent = atom.ui || "";
+        tr.appendChild(col1);
+        const col2 = document.createElement("td");
+        col2.textContent = atom.name || "";
+        tr.appendChild(col2);
+        const col3 = document.createElement("td");
+        col3.textContent = (atom.concept && atom.concept.ui) || atom.cui || "";
+        tr.appendChild(col3);
         infoTableBody.appendChild(tr);
       });
     } else if (detailType === "definitions") {
@@ -845,7 +863,8 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
     const errorColspan =
       detailType === "relations" ? 5 :
       detailType === "definitions" ? 2 :
-      detailType === "atoms" ? 4 : 3;
+      detailType === "atoms" ? 4 :
+      detailType === "atoms/preferred" ? 3 : 3;
     infoTableBody.innerHTML = `<tr><td colspan="${errorColspan}">Error loading ${detailType}.</td></tr>`;
   }
 }
