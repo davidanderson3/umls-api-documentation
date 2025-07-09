@@ -305,6 +305,8 @@ async function searchUMLS(options = {}) {
   } catch (error) {
     resultsContainer.textContent = "Error fetching data: " + error;
     infoTableBody.innerHTML = '<tr><td colspan="3">Error loading data.</td></tr>';
+  } finally {
+    scrollRecentRequestIntoView();
   }
 }
 
@@ -923,6 +925,8 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       detailType === "atoms" ? 4 :
       detailType === "atoms/preferred" ? 3 : 3;
     infoTableBody.innerHTML = `<tr><td colspan="${errorColspan}">Error loading ${detailType}.</td></tr>`;
+  } finally {
+    scrollRecentRequestIntoView();
   }
 }
 
@@ -1021,6 +1025,8 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
   } catch (error) {
     resultsContainer.textContent = `Error fetching ${detailType || "details"}: ${error}`;
     infoTableBody.innerHTML = `<tr><td colspan="2">Error loading ${detailType || "details"}.</td></tr>`;
+  } finally {
+    scrollRecentRequestIntoView();
   }
 }
 
@@ -1137,10 +1143,13 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
   } catch (error) {
     resultsContainer.textContent = `Error fetching related ${relatedType}: ${error}`;
     infoTableBody.innerHTML = `<tr><td colspan="2">Error loading related ${relatedType}.</td></tr>`;
+  } finally {
+    scrollRecentRequestIntoView();
   }
 };
 
 async function fetchCuisForCode(code, sab) {
+  scrollRecentRequestIntoView();
   const apiKey = document.getElementById("api-key").value.trim();
   if (!apiKey) {
     alert("Please enter an API key first.");
@@ -1236,6 +1245,8 @@ async function fetchCuisForCode(code, sab) {
   } catch (error) {
     resultsContainer.textContent = `Error fetching CUIs: ${error}`;
     infoTableBody.innerHTML = '<tr><td colspan="2">Error loading CUIs.</td></tr>';
+  } finally {
+    scrollRecentRequestIntoView();
   }
 }
 
