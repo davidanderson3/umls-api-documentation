@@ -192,6 +192,7 @@ async function searchUMLS(options = {}) {
   const selectedVocabularies =
     returnIdType === "code" ? getSelectedVocabularies() : [];
   const resultsHeading = document.getElementById("results-heading");
+  const searchSummary = document.getElementById("search-summary");
 
   if (resultsHeading) {
     if (searchString) {
@@ -200,6 +201,15 @@ async function searchUMLS(options = {}) {
     } else {
       resultsHeading.textContent = "";
       resultsHeading.classList.add("hidden");
+    }
+  }
+  if (searchSummary) {
+    if (searchString) {
+      searchSummary.textContent = `Searched for "${searchString}"`;
+      searchSummary.classList.remove("hidden");
+    } else {
+      searchSummary.textContent = "";
+      searchSummary.classList.add("hidden");
     }
   }
 
@@ -494,6 +504,11 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   if (resultsHeading) {
     resultsHeading.textContent = "";
     resultsHeading.classList.add("hidden");
+  }
+  const searchSummary = document.getElementById("search-summary");
+  if (searchSummary) {
+    searchSummary.textContent = "";
+    searchSummary.classList.add("hidden");
   }
 
   if (!apiKey) {
@@ -913,6 +928,11 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
     resultsHeading.textContent = "";
     resultsHeading.classList.add("hidden");
   }
+  const searchSummary = document.getElementById("search-summary");
+  if (searchSummary) {
+    searchSummary.textContent = "";
+    searchSummary.classList.add("hidden");
+  }
 
   const baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/AUI/${aui}` + (detailType ? `/${detailType}` : "");
   const apiUrlObj = new URL(baseUrl);
@@ -1034,6 +1054,11 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
     resultsHeading.textContent = "";
     resultsHeading.classList.add("hidden");
   }
+  const searchSummary = document.getElementById("search-summary");
+  if (searchSummary) {
+    searchSummary.textContent = "";
+    searchSummary.classList.add("hidden");
+  }
 
   resultsContainer.textContent = `Loading related ${relatedType} information...`;
   infoTableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
@@ -1116,6 +1141,11 @@ async function fetchCuisForCode(code, sab) {
   if (resultsHeading) {
     resultsHeading.textContent = `Results for "${code}"`;
     resultsHeading.classList.remove("hidden");
+  }
+  const searchSummary = document.getElementById("search-summary");
+  if (searchSummary) {
+    searchSummary.textContent = "";
+    searchSummary.classList.add("hidden");
   }
 
   const url = new URL("https://uts-ws.nlm.nih.gov/rest/search/current");

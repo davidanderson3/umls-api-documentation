@@ -211,6 +211,11 @@ pre {
   text-align: center;
 }
 
+#search-summary {
+  margin: 0.5rem 0;
+  text-align: center;
+}
+
 .umls-app__recent-request {
   width: 100%;
   box-sizing: border-box;
