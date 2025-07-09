@@ -104,9 +104,13 @@ function renderConceptSummary(concept) {
 
   summary.innerHTML = "";
   const header = document.createElement("h2");
-  header.textContent = concept.name
+  let headerText = concept.name
     ? `${concept.name} (${concept.ui || ""})`
     : concept.ui || "";
+  if (concept.rootSource) {
+    headerText += ` - ${concept.rootSource} code`;
+  }
+  header.textContent = headerText;
   summary.appendChild(header);
 
   // The detailed table already includes these values so we omit them from the
@@ -602,20 +606,23 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
 
     resultsContainer.textContent = JSON.stringify(data, null, 2);
 
+    const detailObj =
+      data && typeof data.result === "object" && !Array.isArray(data.result)
+        ? data.result
+        : typeof data === "object"
+        ? data
+        : null;
+
+    renderConceptSummary(detailObj && typeof detailObj === "object" ? detailObj : null);
+
     infoTableBody.innerHTML = "";
 
     if (!detailType) {
       tableHead.innerHTML = `<tr><th>Key</th><th>Value</th></tr>`;
-      const detailObj = data && typeof data.result === "object" && !Array.isArray(data.result)
-        ? data.result
-        : data;
       if (!detailObj || typeof detailObj !== "object") {
         infoTableBody.innerHTML = `<tr><td colspan="2">No details found for this ${cui}.</td></tr>`;
-        renderConceptSummary(null);
         return;
       }
-
-      renderConceptSummary(detailObj);
 
       Object.keys(detailObj).forEach(key => {
         const value = detailObj[key];
@@ -649,16 +656,10 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
 
     } else if (detailType === "sourceAtomClusters") {
       tableHead.innerHTML = `<tr><th>Key</th><th>Value</th></tr>`;
-      const detailObj = data && typeof data.result === "object" && !Array.isArray(data.result)
-        ? data.result
-        : data;
       if (!detailObj || typeof detailObj !== "object") {
         infoTableBody.innerHTML = `<tr><td colspan="2">No sourceAtomClusters found for this ${cui}.</td></tr>`;
-        renderConceptSummary(null);
         return;
       }
-
-      renderConceptSummary(detailObj);
 
       Object.keys(detailObj).forEach(key => {
         if (/atomcount/i.test(key)) return;
@@ -996,11 +997,18 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
     }
     const data = await response.json();
     resultsContainer.textContent = JSON.stringify(data, null, 2);
+
+    const detailObj =
+      data && typeof data.result === "object" && !Array.isArray(data.result)
+        ? data.result
+        : typeof data === "object"
+        ? data
+        : null;
+
+    renderConceptSummary(detailObj && typeof detailObj === "object" ? detailObj : null);
+
     infoTableBody.innerHTML = "";
 
-    const detailObj = data && typeof data.result === "object" && !Array.isArray(data.result)
-      ? data.result
-      : data;
     if (detailObj && typeof detailObj === "object") {
       Object.keys(detailObj).forEach(key => {
         const value = detailObj[key];
@@ -1104,11 +1112,17 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
     }
     const data = await response.json();
     resultsContainer.textContent = JSON.stringify(data, null, 2);
-    infoTableBody.innerHTML = "";
 
-    const detailObj = data && typeof data.result === "object" && !Array.isArray(data.result)
-      ? data.result
-      : data;
+    const detailObj =
+      data && typeof data.result === "object" && !Array.isArray(data.result)
+        ? data.result
+        : typeof data === "object"
+        ? data
+        : null;
+
+    renderConceptSummary(detailObj && typeof detailObj === "object" ? detailObj : null);
+
+    infoTableBody.innerHTML = "";
 
   if (detailObj && typeof detailObj === "object") {
     Object.keys(detailObj).forEach((key) => {
