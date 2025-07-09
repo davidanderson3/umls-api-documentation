@@ -176,7 +176,11 @@ async function renderSearchResults(data, returnIdType) {
 
 async function searchUMLS(options = {}) {
   scrollRecentRequestIntoView();
-  const { skipPushState = false, useCache = false } = options;
+  const {
+    skipPushState = false,
+    useCache = false,
+    release = "current",
+  } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   const searchString = document.getElementById("query").value.trim();
   const returnIdType = document.getElementById("return-id-type").value;
@@ -201,7 +205,8 @@ async function searchUMLS(options = {}) {
   const cacheKey = JSON.stringify({
     q: searchString,
     idType: returnIdType,
-    sabs: selectedVocabularies.join(",")
+    sabs: selectedVocabularies.join(","),
+    release,
   });
 
   const newUrl = new URL(window.location.pathname, window.location.origin);
@@ -242,7 +247,7 @@ async function searchUMLS(options = {}) {
   if (infoTable) infoTable.style.display = "";
   if (noResultsMessage) noResultsMessage.classList.add("hidden");
 
-  const url = new URL("https://uts-ws.nlm.nih.gov/rest/search/current");
+  const url = new URL(`https://uts-ws.nlm.nih.gov/rest/search/${release}`);
   url.searchParams.append("string", searchString);
   url.searchParams.append("returnIdType", returnIdType);
   url.searchParams.append("apiKey", apiKey);
@@ -370,14 +375,8 @@ function parseHash() {
         result.returnIdType = "concept";
       }
     }
-    else if (parts[2] === "AUI") {
-      if (parts.length >= 5) {
-        result.aui = parts[3];
-        result.detail = parts[4];
-      } else if (parts.length === 4) {
-        result.aui = parts[3];
-      }
-    }
+  } else if (parts[0] === "search") {
+    result.release = parts[1];
   }
   if (queryPart) {
     const sp = new URLSearchParams(queryPart);
@@ -446,13 +445,7 @@ function navigateToUmlsUrl(url, key) {
       if (typeof window.updateVocabVisibility === "function") {
         window.updateVocabVisibility();
       }
-      searchUMLS();
-    } else if (parsed.type === "aui") {
-      modalCurrentData.sab = null;
-      modalCurrentData.ui = parsed.aui;
-      modalCurrentData.uri = null;
-      modalCurrentData.returnIdType = "aui";
-      fetchAuiDetails(parsed.aui, parsed.detail || key.toLowerCase());
+      searchUMLS({ release: parsed.release || "current" });
     } else {
       modalCurrentData.sab = null;
       modalCurrentData.ui = parsed.cui;
@@ -1171,6 +1164,7 @@ window.addEventListener("DOMContentLoaded", function () {
   function applyUrlParams(fromPopState = false) {
     const params = new URLSearchParams(window.location.search);
     const hashParams = parseHash();
+    const release = hashParams.release || "current";
     const apiKey = params.get("apiKey");
     const searchString = params.get("string");
     let returnIdType = params.get("returnIdType") || hashParams.returnIdType;
@@ -1255,7 +1249,7 @@ window.addEventListener("DOMContentLoaded", function () {
       }
       fetchRelatedDetail(fullUrl, related, sab, { skipPushState: fromPopState });
     } else if (searchString) {
-      searchUMLS({ skipPushState: fromPopState, useCache: fromPopState });
+      searchUMLS({ skipPushState: fromPopState, useCache: fromPopState, release });
   }
   }
 
