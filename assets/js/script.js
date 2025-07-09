@@ -43,6 +43,13 @@ function scrollRecentRequestIntoView() {
   }
 }
 
+function collapseRawDataDetails() {
+  const raw = document.getElementById("raw-data-details");
+  if (raw && raw.hasAttribute("open")) {
+    raw.removeAttribute("open");
+  }
+}
+
 function getMRRank(sab, tty) {
   if (!sab) return -1;
   if (tty && mrrankData.bySabTty[sab] && mrrankData.bySabTty[sab][tty] !== undefined) {
@@ -176,6 +183,7 @@ async function renderSearchResults(data, returnIdType) {
 
 async function searchUMLS(options = {}) {
   scrollRecentRequestIntoView();
+  collapseRawDataDetails();
   const { skipPushState = false, useCache = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   const searchString = document.getElementById("query").value.trim();
