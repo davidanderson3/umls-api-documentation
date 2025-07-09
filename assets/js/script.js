@@ -571,6 +571,8 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       tableHead.innerHTML = `<tr><th>Definition</th><th>Root Source</th></tr>`;
     } else if (detailType === "attributes") {
       tableHead.innerHTML = `<tr><th>Name</th><th>Value</th><th>Root Source</th></tr>`;
+    } else if (detailType === "parents") {
+      tableHead.innerHTML = `<tr><th>UI</th><th>Name</th><th>Root Source</th></tr>`;
     } else if (detailType === "relations") {
       tableHead.innerHTML = `<tr>
           <th>From Name</th>
@@ -630,6 +632,37 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         tr.appendChild(col2);
         const col3 = document.createElement("td");
         col3.textContent = attr.rootSource || "(no rootSource)";
+        tr.appendChild(col3);
+        infoTableBody.appendChild(tr);
+      });
+    } else if (detailType === "parents") {
+      sortedDetails.forEach((parent) => {
+        const tr = document.createElement("tr");
+        const col1 = document.createElement("td");
+        col1.style.color = "blue";
+        col1.style.textDecoration = "underline";
+        col1.style.cursor = "pointer";
+        col1.textContent = parent.ui || "";
+        col1.addEventListener("click", () => {
+          modalCurrentData.ui = parent.ui;
+          modalCurrentData.name = parent.name || null;
+          if (returnIdType === "code") {
+            modalCurrentData.sab = parent.rootSource;
+            modalCurrentData.uri = parent.uri || null;
+            modalCurrentData.returnIdType = "code";
+          } else {
+            modalCurrentData.sab = null;
+            modalCurrentData.uri = null;
+            modalCurrentData.returnIdType = "concept";
+          }
+          fetchConceptDetails(parent.ui, "");
+        });
+        tr.appendChild(col1);
+        const col2 = document.createElement("td");
+        col2.textContent = parent.name || "";
+        tr.appendChild(col2);
+        const col3 = document.createElement("td");
+        col3.textContent = parent.rootSource || "";
         tr.appendChild(col3);
         infoTableBody.appendChild(tr);
       });
