@@ -309,6 +309,8 @@ function updateDocLink(urlObject) {
     "relations",
     "parents",
     "children",
+    "ancestors",
+    "descendants",
     "cuis"
   ];
   const last = pathParts[pathParts.length - 1];
@@ -674,6 +676,41 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         const col5 = document.createElement("td");
         col5.textContent = relation.rootSource || "(no rootSource)";
         tr.appendChild(col5);
+
+        infoTableBody.appendChild(tr);
+      });
+    } else if (["parents", "children", "ancestors", "descendants"].includes(detailType)) {
+      tableHead.innerHTML = `<tr><th>UI</th><th>Name</th><th>Root Source</th></tr>`;
+      sortedDetails.forEach((item) => {
+        const tr = document.createElement("tr");
+        const col1 = document.createElement("td");
+        col1.style.color = "blue";
+        col1.style.textDecoration = "underline";
+        col1.style.cursor = "pointer";
+        col1.textContent = item.ui || "N/A";
+        col1.addEventListener("click", function () {
+          modalCurrentData.ui = item.ui;
+          modalCurrentData.name = item.name || null;
+          if (item.rootSource) {
+            modalCurrentData.sab = item.rootSource;
+            modalCurrentData.uri = null;
+            modalCurrentData.returnIdType = "code";
+          } else {
+            modalCurrentData.sab = null;
+            modalCurrentData.uri = null;
+            modalCurrentData.returnIdType = "concept";
+          }
+          fetchConceptDetails(item.ui, "");
+        });
+        tr.appendChild(col1);
+
+        const col2 = document.createElement("td");
+        col2.textContent = item.name || "N/A";
+        tr.appendChild(col2);
+
+        const col3 = document.createElement("td");
+        col3.textContent = item.rootSource || "(no rootSource)";
+        tr.appendChild(col3);
 
         infoTableBody.appendChild(tr);
       });
