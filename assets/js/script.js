@@ -629,7 +629,19 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         const tdKey = document.createElement("td");
         tdKey.textContent = key;
         const tdValue = document.createElement("td");
-        if (typeof value === "string" && value.startsWith("http")) {
+        if (key === "semanticTypes" && Array.isArray(value)) {
+          const items = value.map(st => {
+            if (!st) return "";
+            const anchor = document.createElement("a");
+            anchor.href = st.uri || "#";
+            anchor.target = "_blank";
+            const tuiMatch = st.uri && st.uri.match(/TUI\/([^/]+)$/);
+            const tui = tuiMatch ? ` (${tuiMatch[1]})` : "";
+            anchor.textContent = `${st.name || st.tui || ""}${tui}`.trim();
+            return anchor.outerHTML;
+          });
+          tdValue.innerHTML = items.join(", ");
+        } else if (typeof value === "string" && value.startsWith("http")) {
           const link = document.createElement("a");
           link.href = "#";
           link.textContent = value;
