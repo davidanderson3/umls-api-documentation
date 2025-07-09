@@ -932,6 +932,16 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
     alert("Please enter an API key first.");
     return;
   }
+
+  // If a bare UI/code is passed in, construct the full URL
+  if (!/^https?:\/\//i.test(apiUrl)) {
+    if (rootSource) {
+      apiUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${rootSource}/${apiUrl}`;
+    } else {
+      apiUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${apiUrl}`;
+    }
+  }
+
   let urlObj = new URL(apiUrl);
   urlObj.searchParams.append("apiKey", apiKey);
   urlObj.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
