@@ -130,11 +130,6 @@ async function renderSearchResults(data, returnIdType) {
   const infoTableBody = document.querySelector("#info-table tbody");
   const tableHead = document.querySelector("#info-table thead");
   const resultsHeading = document.getElementById("results-heading");
-
-  if (resultsHeading) {
-    resultsHeading.textContent = "";
-    resultsHeading.classList.add("hidden");
-  }
   const infoTable = document.getElementById("info-table");
   const noResultsMessage = document.getElementById("no-results-message");
 
@@ -265,8 +260,7 @@ async function searchUMLS(options = {}) {
   const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
   if (resultsHeading) {
-    resultsHeading.textContent = "";
-    resultsHeading.classList.add("hidden");
+    resultsHeading.classList.remove("hidden");
   }
   const infoTable = document.getElementById("info-table");
   const noResultsMessage = document.getElementById("no-results-message");
