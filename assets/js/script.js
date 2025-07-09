@@ -1,4 +1,5 @@
 const DEFAULT_PAGE_SIZE = 200;
+let searchRelease = "current";
 let modalCurrentData = {
   ui: null,
   sab: null,
@@ -197,7 +198,8 @@ async function renderSearchResults(data, returnIdType) {
 async function searchUMLS(options = {}) {
   scrollRecentRequestIntoView();
   collapseRawDataDetails();
-  const { skipPushState = false, useCache = false } = options;
+  const { skipPushState = false, useCache = false, release } = options;
+  searchRelease = release || "current";
   const apiKey = document.getElementById("api-key").value.trim();
   const searchString = document.getElementById("query").value.trim();
   const returnIdType = document.getElementById("return-id-type").value;
@@ -262,7 +264,7 @@ async function searchUMLS(options = {}) {
   if (infoTable) infoTable.style.display = "";
   if (noResultsMessage) noResultsMessage.classList.add("hidden");
 
-  const url = new URL("https://uts-ws.nlm.nih.gov/rest/search/current");
+  const url = new URL(`https://uts-ws.nlm.nih.gov/rest/search/${searchRelease}`);
   url.searchParams.append("string", searchString);
   url.searchParams.append("returnIdType", returnIdType);
   url.searchParams.append("apiKey", apiKey);
@@ -466,7 +468,7 @@ function navigateToUmlsUrl(url, key) {
       if (typeof window.updateVocabVisibility === "function") {
         window.updateVocabVisibility();
       }
-      searchUMLS();
+      searchUMLS({ release: parsed.release });
     } else if (parsed.type === "aui") {
       modalCurrentData.sab = null;
       modalCurrentData.ui = parsed.aui;
@@ -1130,7 +1132,7 @@ async function fetchCuisForCode(code, sab) {
     resultsHeading.classList.remove("hidden");
   }
 
-  const url = new URL("https://uts-ws.nlm.nih.gov/rest/search/current");
+  const url = new URL(`https://uts-ws.nlm.nih.gov/rest/search/${searchRelease}`);
   url.searchParams.append("string", code);
   url.searchParams.append("inputType", "sourceUi");
   url.searchParams.append("searchType", "exact");
