@@ -93,6 +93,31 @@ function extractCui(concept) {
   return "";
 }
 
+function formatHeading(detailType) {
+  if (!detailType) return "";
+  const map = {
+    "atoms/preferred": "Preferred Atoms",
+    "sourceAtomClusters": "Source Atom Clusters"
+  };
+  if (map[detailType]) return map[detailType];
+  return detailType
+    .split("/")
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+    .join(" ");
+}
+
+function setResultsHeading(text) {
+  const resultsHeading = document.getElementById("results-heading");
+  if (!resultsHeading) return;
+  if (text) {
+    resultsHeading.textContent = text;
+    resultsHeading.classList.remove("hidden");
+  } else {
+    resultsHeading.textContent = "";
+    resultsHeading.classList.add("hidden");
+  }
+}
+
 function renderConceptSummary(concept) {
   const summary = document.getElementById("concept-summary");
   if (!summary) return;
@@ -125,12 +150,6 @@ async function renderSearchResults(data, returnIdType) {
   const resultsContainer = document.getElementById("output");
   const infoTableBody = document.querySelector("#info-table tbody");
   const tableHead = document.querySelector("#info-table thead");
-  const resultsHeading = document.getElementById("results-heading");
-
-  if (resultsHeading) {
-    resultsHeading.textContent = "";
-    resultsHeading.classList.add("hidden");
-  }
   const infoTable = document.getElementById("info-table");
   const noResultsMessage = document.getElementById("no-results-message");
 
@@ -211,18 +230,9 @@ async function searchUMLS(options = {}) {
   const returnIdType = document.getElementById("return-id-type").value;
   const selectedVocabularies =
     returnIdType === "code" ? getSelectedVocabularies() : [];
-  const resultsHeading = document.getElementById("results-heading");
   const searchSummary = document.getElementById("search-summary");
 
-  if (resultsHeading) {
-    if (searchString) {
-      resultsHeading.textContent = `Results for "${searchString}"`;
-      resultsHeading.classList.remove("hidden");
-    } else {
-      resultsHeading.textContent = "";
-      resultsHeading.classList.add("hidden");
-    }
-  }
+  setResultsHeading(searchString ? `Results for "${searchString}"` : "");
   if (searchSummary) {
     if (searchString) {
       searchSummary.textContent = `Searched for "${searchString}"`;
@@ -260,10 +270,6 @@ async function searchUMLS(options = {}) {
   const infoTableBody = document.querySelector("#info-table tbody");
   const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
-  if (resultsHeading) {
-    resultsHeading.textContent = "";
-    resultsHeading.classList.add("hidden");
-  }
   const infoTable = document.getElementById("info-table");
   const noResultsMessage = document.getElementById("no-results-message");
   renderConceptSummary(null);
@@ -533,11 +539,11 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
 
-  const resultsHeading = document.getElementById("results-heading");
-  if (resultsHeading) {
-    resultsHeading.textContent = "";
-    resultsHeading.classList.add("hidden");
-  }
+  setResultsHeading(
+    detailType
+      ? `${formatHeading(detailType)} for ${cui}`
+      : `Details for ${cui}`
+  );
   const searchSummary = document.getElementById("search-summary");
   if (searchSummary) {
     searchSummary.textContent = "";
@@ -970,11 +976,11 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
   const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
 
-  const resultsHeading = document.getElementById("results-heading");
-  if (resultsHeading) {
-    resultsHeading.textContent = "";
-    resultsHeading.classList.add("hidden");
-  }
+  setResultsHeading(
+    detailType
+      ? `${formatHeading(detailType)} for ${aui}`
+      : `Details for ${aui}`
+  );
   const searchSummary = document.getElementById("search-summary");
   if (searchSummary) {
     searchSummary.textContent = "";
@@ -1105,11 +1111,7 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
   const infoTableBody = document.querySelector("#info-table tbody");
   const tableHead = document.querySelector("#info-table thead");
 
-  const resultsHeading = document.getElementById("results-heading");
-  if (resultsHeading) {
-    resultsHeading.textContent = "";
-    resultsHeading.classList.add("hidden");
-  }
+  setResultsHeading(`Related ${formatHeading(relatedType)}`);
   const searchSummary = document.getElementById("search-summary");
   if (searchSummary) {
     searchSummary.textContent = "";
@@ -1202,11 +1204,7 @@ async function fetchCuisForCode(code, sab) {
   const infoTable = document.getElementById("info-table");
   const noResultsMessage = document.getElementById("no-results-message");
 
-  const resultsHeading = document.getElementById("results-heading");
-  if (resultsHeading) {
-    resultsHeading.textContent = `Results for "${code}"`;
-    resultsHeading.classList.remove("hidden");
-  }
+  setResultsHeading(`Results for "${code}"`);
   const searchSummary = document.getElementById("search-summary");
   if (searchSummary) {
     searchSummary.textContent = "";
