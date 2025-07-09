@@ -725,14 +725,15 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         col3.textContent = atom.rootSource || "(no rootSource)";
         tr.appendChild(col3);
         const col4 = document.createElement("td");
-        col4.textContent = atom.code || "";
         if (atom.code) {
-          col4.style.color = "blue";
-          col4.style.textDecoration = "underline";
-          col4.style.cursor = "pointer";
-          col4.addEventListener("click", () => {
-            fetchCuisForCode(atom.code, atom.rootSource);
-          });
+          const link = document.createElement("a");
+          link.href = atom.code;
+          link.target = "_blank";
+          link.rel = "noopener";
+          link.textContent = stripBaseUrl(atom.code);
+          col4.appendChild(link);
+        } else {
+          col4.textContent = "";
         }
         tr.appendChild(col4);
         infoTableBody.appendChild(tr);
