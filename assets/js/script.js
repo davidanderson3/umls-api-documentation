@@ -419,6 +419,11 @@ function parseHash() {
       }
     }
   }
+  else if (parts[0] === "search") {
+    if (parts.length >= 2) {
+      result.searchRelease = parts[1];
+    }
+  }
   if (queryPart) {
     const sp = new URLSearchParams(queryPart);
     for (const [k, v] of sp.entries()) {
@@ -1283,6 +1288,8 @@ window.addEventListener("DOMContentLoaded", function () {
     const searchString = params.get("string");
     let returnIdType = params.get("returnIdType") || hashParams.returnIdType;
     const sabs = params.get("sabs") || hashParams.sabs;
+    const inputType = params.get("inputType") || hashParams.inputType;
+    const searchType = params.get("searchType") || hashParams.searchType;
     let detail = params.get("detail") || hashParams.detail;
     let cui = params.get("cui") || hashParams.cui;
     let code = params.get("code") || hashParams.code;
@@ -1362,9 +1369,14 @@ window.addEventListener("DOMContentLoaded", function () {
         fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${relatedId}`;
       }
       fetchRelatedDetail(fullUrl, related, sab, { skipPushState: fromPopState });
+    } else if (inputType === "sourceUi" && searchType === "exact" && searchString) {
+      if (hashParams.searchRelease) {
+        searchRelease = hashParams.searchRelease;
+      }
+      fetchCuisForCode(searchString, sab);
     } else if (searchString) {
-      searchUMLS({ skipPushState: fromPopState, useCache: fromPopState });
-  }
+      searchUMLS({ skipPushState: fromPopState, useCache: fromPopState, release: hashParams.searchRelease });
+    }
   }
 
   // Helper to toggle visibility
