@@ -53,15 +53,16 @@
     </div>
     <!-- Results displayed full width below -->
     <div class="umls-app__results" id="results">
-        <h2 id="results-heading" class="hidden"></h2>
-        <details id="raw-data-details" class="raw-data-details">
-            <summary>Raw Data</summary>
-            <pre id="output">No results yet...</pre>
-        </details>
-        <p id="search-summary" class="search-summary hidden"></p>
-        <div id="concept-summary" class="concept-summary hidden"></div>
-        <p id="no-results-message" class="hidden">No Results</p>
-        <table id="info-table" class="umls-app__table">
+        <div class="results-inner">
+            <h2 id="results-heading" class="hidden"></h2>
+            <details id="raw-data-details" class="raw-data-details">
+                <summary>Raw Data</summary>
+                <pre id="output">No results yet...</pre>
+            </details>
+            <p id="search-summary" class="search-summary hidden"></p>
+            <div id="concept-summary" class="concept-summary hidden"></div>
+            <p id="no-results-message" class="hidden">No Results</p>
+            <table id="info-table" class="umls-app__table">
             <thead>
                 <tr>
                     <th>UI</th>
@@ -75,6 +76,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 </div>
     <script src="assets/js/mrrank-data.js"></script>
