@@ -134,6 +134,9 @@ pre {
 
 .results-inner {
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .umls-app__table {
@@ -204,6 +207,7 @@ pre {
 .raw-data-details {
   margin: 0;
   padding: 0;
+  width: 100%;
 }
 
 .concept-summary {
@@ -221,7 +225,8 @@ pre {
 #results-heading {
   margin: 0;
   padding: 0;
-  text-align: center;
+  text-align: left;
+  width: 100%;
 }
 
 #search-summary {
