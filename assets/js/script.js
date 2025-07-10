@@ -1,4 +1,5 @@
 const DEFAULT_PAGE_SIZE = 200;
+const DEFAULT_SEMANTIC_NETWORK_RELEASE = "2025AA";
 let searchRelease = "current";
 let modalCurrentData = {
   ui: null,
@@ -522,8 +523,7 @@ function navigateToUmlsUrl(url, key) {
       modalCurrentData.returnIdType = "aui";
       fetchAuiDetails(parsed.aui, detail !== undefined ? detail : key.toLowerCase());
     } else if (parsed.type === "semanticType") {
-      fetchSemanticType(parsed.tui);
-    } else {
+      fetchSemanticType(parsed.tui, { release: DEFAULT_SEMANTIC_NETWORK_RELEASE });
       modalCurrentData.sab = null;
       modalCurrentData.ui = parsed.cui;
       modalCurrentData.uri = null;
@@ -669,13 +669,13 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
           const items = value.map(st => {
             if (!st) return "";
             const anchor = document.createElement("a");
-            anchor.href = "#";
+            anchor.href = "https://uts-ws.nlm.nih.gov/rest/semantic-network/" + DEFAULT_SEMANTIC_NETWORK_RELEASE + "/TUI/" + (st.tui || "");
             const tuiMatch = (st.tui || (st.uri && st.uri.match(/TUI\/([^/]+)$/)));
             const tui = tuiMatch ? (Array.isArray(tuiMatch) ? tuiMatch[1] : tuiMatch) : "";
             anchor.textContent = `${st.name || st.tui || ""}${tui ? ` (${tui})` : ""}`.trim();
             anchor.addEventListener("click", function(e) {
               e.preventDefault();
-              if (tui) fetchSemanticType(tui);
+              if (tui) fetchSemanticType(tui, { release: DEFAULT_SEMANTIC_NETWORK_RELEASE });
             });
             return anchor.outerHTML;
           });
@@ -1339,7 +1339,7 @@ async function fetchCuisForCode(code, sab) {
 
 async function fetchSemanticType(tui, options = {}) {
   scrollRecentRequestIntoView();
-  const { skipPushState = false } = options;
+  const { skipPushState = false, release = DEFAULT_SEMANTIC_NETWORK_RELEASE } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   if (!apiKey) {
     alert("Please enter an API key first.");
@@ -1361,8 +1361,7 @@ async function fetchSemanticType(tui, options = {}) {
     searchSummary.textContent = "";
     searchSummary.classList.add("hidden");
   }
-
-  const baseUrl = `https://uts-ws.nlm.nih.gov/rest/semantic-network/semantic-types/${tui}`;
+  const baseUrl = `https://uts-ws.nlm.nih.gov/rest/semantic-network/${release}/TUI/${tui}`;
   const apiUrlObj = new URL(baseUrl);
   apiUrlObj.searchParams.append("apiKey", apiKey);
   apiUrlObj.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
@@ -1374,6 +1373,7 @@ async function fetchSemanticType(tui, options = {}) {
 
   const addressUrl = new URL(window.location.pathname, window.location.origin);
   addressUrl.searchParams.set("tui", tui);
+  addressUrl.searchParams.set("semanticRelease", release);
   if (!skipPushState) {
     window.history.pushState({}, "", addressUrl.toString());
   }
@@ -1548,8 +1548,7 @@ window.addEventListener("DOMContentLoaded", function () {
       modalCurrentData.returnIdType = "aui";
       fetchAuiDetails(aui, "", { skipPushState: fromPopState });
     } else if (tui) {
-      fetchSemanticType(tui, { skipPushState: fromPopState });
-    } else if (related && relatedId) {
+      fetchSemanticType(tui, { skipPushState: fromPopState, release: DEFAULT_SEMANTIC_NETWORK_RELEASE });
       let fullUrl;
       if (sab) {
         fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${relatedId}`;
