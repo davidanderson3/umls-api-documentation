@@ -552,10 +552,10 @@ function navigateToUmlsUrl(url, key) {
     } else if (parsed.type === "semanticType") {
       fetchSemanticType(parsed.tui, { release: DEFAULT_SEMANTIC_NETWORK_RELEASE });
       modalCurrentData.sab = null;
-      modalCurrentData.ui = parsed.cui;
+      modalCurrentData.ui = parsed.tui;
+      modalCurrentData.name = null;
       modalCurrentData.uri = null;
-      modalCurrentData.returnIdType = "concept";
-      fetchConceptDetails(parsed.cui, detail !== undefined ? detail : key.toLowerCase());
+      modalCurrentData.returnIdType = "semanticType";
     }
   } else {
     fetchRelatedDetail(url, key.toLowerCase());
