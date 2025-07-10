@@ -659,7 +659,7 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
 
       Object.keys(detailObj).forEach(key => {
         const value = detailObj[key];
-        if (typeof value === "string" && value.toUpperCase() === "NONE") return;
+        // Previously we skipped fields with a value of "NONE". Now we include them
         const tr = document.createElement("tr");
         const tdKey = document.createElement("td");
         tdKey.textContent = key;
@@ -712,7 +712,7 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       Object.keys(detailObj).forEach(key => {
         if (/atomcount/i.test(key)) return;
         const value = detailObj[key];
-        if (typeof value === "string" && value.toUpperCase() === "NONE") return;
+        // Previously we skipped fields with a value of "NONE". Now we include them
         const tr = document.createElement("tr");
         const tdKey = document.createElement("td");
         tdKey.textContent = key;
@@ -1064,7 +1064,7 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
     if (detailObj && typeof detailObj === "object") {
       Object.keys(detailObj).forEach(key => {
         const value = detailObj[key];
-        if (typeof value === "string" && value.toUpperCase() === "NONE") return;
+        // Previously we skipped fields with a value of "NONE". Now we include them
         const tr = document.createElement("tr");
         const tdKey = document.createElement("td");
         tdKey.textContent = key;
@@ -1184,10 +1184,7 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
     Object.keys(detailObj).forEach((key) => {
       const value = detailObj[key];
 
-      // Exclude NONE values
-      if (typeof value === "string" && value.toUpperCase() === "NONE") {
-        return;
-      }
+      // Fields with a value of "NONE" are now displayed
 
       const tr = document.createElement("tr");
       const tdKey = document.createElement("td");
@@ -1392,7 +1389,7 @@ async function fetchSemanticType(tui, options = {}) {
     if (detailObj && typeof detailObj === "object") {
       Object.keys(detailObj).forEach(key => {
         const value = detailObj[key];
-        if (typeof value === "string" && value.toUpperCase() === "NONE") return;
+        // Previously we skipped fields with a value of "NONE". Now we include them
         const tr = document.createElement("tr");
         const tdKey = document.createElement("td");
         tdKey.textContent = key;
