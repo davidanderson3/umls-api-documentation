@@ -222,7 +222,7 @@ async function searchUMLS(options = {}) {
 
   if (resultsHeading) {
     if (searchString) {
-      resultsHeading.textContent = `Results for "${searchString}"`;
+      resultsHeading.textContent = `Results: "${searchString}"`;
       resultsHeading.classList.remove("hidden");
     } else {
       resultsHeading.textContent = "";
@@ -1279,7 +1279,7 @@ async function fetchCuisForCode(code, sab) {
 
   const resultsHeading = document.getElementById("results-heading");
   if (resultsHeading) {
-    resultsHeading.textContent = `Results for "${code}"`;
+    resultsHeading.textContent = `Results: "${code}"`;
     resultsHeading.classList.remove("hidden");
   }
   const searchSummary = document.getElementById("search-summary");
