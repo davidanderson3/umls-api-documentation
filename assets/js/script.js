@@ -229,13 +229,8 @@ async function searchUMLS(options = {}) {
     }
   }
   if (searchSummary) {
-    if (searchString) {
-      searchSummary.textContent = `Searched for "${searchString}"`;
-      searchSummary.classList.remove("hidden");
-    } else {
-      searchSummary.textContent = "";
-      searchSummary.classList.add("hidden");
-    }
+    searchSummary.textContent = "";
+    searchSummary.classList.add("hidden");
   }
 
   if (!apiKey || !searchString) {
