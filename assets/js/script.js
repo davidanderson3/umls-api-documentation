@@ -122,6 +122,8 @@ function renderConceptSummary(concept, detailType = "") {
   const isAtom = modalCurrentData.returnIdType === "aui";
   if (isAtom) {
     headerText += " Atom";
+  } else if (modalCurrentData.returnIdType === "semanticType") {
+    headerText += " - Semantic Type";
   } else {
     const source = concept.rootSource || modalCurrentData.sab;
     if (source) {
@@ -1393,6 +1395,7 @@ async function fetchCuisForCode(code, sab) {
 
 async function fetchSemanticType(tui, options = {}) {
   scrollRecentRequestIntoView();
+  renderConceptSummary(null);
   const { skipPushState = false, release = DEFAULT_SEMANTIC_NETWORK_RELEASE } = options;
   const apiKey = document.getElementById("api-key").value.trim();
   if (!apiKey) {
@@ -1451,6 +1454,11 @@ async function fetchSemanticType(tui, options = {}) {
       : typeof data === "object"
       ? data
       : null;
+
+    if (detailObj && typeof detailObj === "object") {
+      modalCurrentData.name = detailObj.name || null;
+      renderConceptSummary({ name: modalCurrentData.name, ui: tui });
+    }
 
     infoTableBody.innerHTML = "";
 
