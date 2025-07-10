@@ -70,15 +70,25 @@ function sortByMRRank(arr, sabKey = 'rootSource', ttyKey = 'termType') {
     .sort((a, b) => getMRRank(b[sabKey], b[ttyKey]) - getMRRank(a[sabKey], a[ttyKey]));
 }
 
-// Sort array alphabetically by additionalRelationLabel
+// Sort source relations by Additional Relation Label, then Relation Label, then To Name
 function sortByAdditionalRelationLabel(arr) {
   if (!Array.isArray(arr)) return arr;
   return arr
     .slice()
     .sort((a, b) => {
-      const aLabel = a.additionalRelationLabel || '';
-      const bLabel = b.additionalRelationLabel || '';
-      return aLabel.localeCompare(bLabel, undefined, { sensitivity: 'base' });
+      const aAdd = a.additionalRelationLabel || '';
+      const bAdd = b.additionalRelationLabel || '';
+      const addComp = aAdd.localeCompare(bAdd, undefined, { sensitivity: 'base' });
+      if (addComp !== 0) return addComp;
+
+      const aRel = a.relationLabel || '';
+      const bRel = b.relationLabel || '';
+      const relComp = aRel.localeCompare(bRel, undefined, { sensitivity: 'base' });
+      if (relComp !== 0) return relComp;
+
+      const aName = a.relatedIdName || '';
+      const bName = b.relatedIdName || '';
+      return aName.localeCompare(bName, undefined, { sensitivity: 'base' });
     });
 }
 
