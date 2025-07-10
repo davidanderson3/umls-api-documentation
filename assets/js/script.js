@@ -693,10 +693,11 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         tdKey.textContent = key;
         const tdValue = document.createElement("td");
         if (key === "semanticTypes" && Array.isArray(value)) {
-          const items = value.map(st => {
-            if (!st) return "";
+          tdValue.innerHTML = "";
+          value.forEach((st, idx) => {
+            if (!st) return;
             const anchor = document.createElement("a");
-            anchor.href = "https://uts-ws.nlm.nih.gov/rest/semantic-network/" + DEFAULT_SEMANTIC_NETWORK_RELEASE + "/TUI/" + (st.tui || "");
+            anchor.href = "#";
             const tuiMatch = (st.tui || (st.uri && st.uri.match(/TUI\/([^/]+)$/)));
             const tui = tuiMatch ? (Array.isArray(tuiMatch) ? tuiMatch[1] : tuiMatch) : "";
             anchor.textContent = `${st.name || st.tui || ""}${tui ? ` (${tui})` : ""}`.trim();
@@ -704,9 +705,11 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
               e.preventDefault();
               if (tui) fetchSemanticType(tui, { release: DEFAULT_SEMANTIC_NETWORK_RELEASE });
             });
-            return anchor.outerHTML;
+            tdValue.appendChild(anchor);
+            if (idx < value.length - 1) {
+              tdValue.appendChild(document.createTextNode(", "));
+            }
           });
-          tdValue.innerHTML = items.join(", ");
         } else if (typeof value === "string" && value.startsWith("http")) {
           const link = document.createElement("a");
           link.href = "#";
