@@ -107,9 +107,15 @@ function renderConceptSummary(concept, detailType = "") {
   const name = concept.name || modalCurrentData.name || "";
   const ui = concept.ui || modalCurrentData.ui || "";
   let headerText = name ? `${name} (${ui})` : ui;
-  const source = concept.rootSource || modalCurrentData.sab;
-  if (source) {
-    headerText += ` - ${source} code`;
+
+  const isAtom = modalCurrentData.returnIdType === "aui";
+  if (isAtom) {
+    headerText += " Atom";
+  } else {
+    const source = concept.rootSource || modalCurrentData.sab;
+    if (source) {
+      headerText += ` - ${source} code`;
+    }
   }
   if (detailType) {
     headerText += ` ${detailType}`;
