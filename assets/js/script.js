@@ -722,7 +722,9 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         } else if (typeof value === "string") {
           tdValue.textContent = value;
         } else {
-          tdValue.textContent = JSON.stringify(value, null, 2);
+          const pre = document.createElement("pre");
+          pre.textContent = JSON.stringify(value, null, 2);
+          tdValue.appendChild(pre);
         }
         tr.appendChild(tdKey);
         tr.appendChild(tdValue);
@@ -760,7 +762,9 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         } else if (typeof value === "string") {
           tdValue.textContent = value;
         } else {
-          tdValue.textContent = JSON.stringify(value, null, 2);
+          const pre = document.createElement("pre");
+          pre.textContent = JSON.stringify(value, null, 2);
+          tdValue.appendChild(pre);
         }
         tr.appendChild(tdKey);
         tr.appendChild(tdValue);
@@ -1125,7 +1129,9 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
         } else if (typeof value === "string") {
           tdValue.textContent = value;
         } else {
-          tdValue.textContent = JSON.stringify(value, null, 2);
+          const pre = document.createElement("pre");
+          pre.textContent = JSON.stringify(value, null, 2);
+          tdValue.appendChild(pre);
         }
         tr.appendChild(tdKey);
         tr.appendChild(tdValue);
@@ -1248,7 +1254,9 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
       } else if (typeof value === "string") {
         tdValue.textContent = value;
       } else {
-        tdValue.textContent = JSON.stringify(value, null, 2);
+        const pre = document.createElement("pre");
+        pre.textContent = JSON.stringify(value, null, 2);
+        tdValue.appendChild(pre);
       }
 
       tr.appendChild(tdKey);
@@ -1450,7 +1458,9 @@ async function fetchSemanticType(tui, options = {}) {
         } else if (typeof value === "string") {
           tdValue.textContent = value;
         } else {
-          tdValue.textContent = JSON.stringify(value, null, 2);
+          const pre = document.createElement("pre");
+          pre.textContent = JSON.stringify(value, null, 2);
+          tdValue.appendChild(pre);
         }
         tr.appendChild(tdKey);
         tr.appendChild(tdValue);
