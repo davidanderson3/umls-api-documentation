@@ -458,6 +458,14 @@ function parseHash() {
       result.tui = parts[2];
     }
   }
+  else if (
+    parts[0] === "semantic-network" &&
+    parts.length >= 4 &&
+    parts[2] === "TUI"
+  ) {
+    result.semanticRelease = parts[1];
+    result.tui = parts[3];
+  }
   else if (parts[0] === "search") {
     if (parts.length >= 2) {
       result.searchRelease = parts[1];
@@ -487,6 +495,10 @@ function parseUmlsUrl(url) {
     m = u.pathname.match(/\/content\/[^/]+\/AUI\/([^/]+)(?:\/(.+))?$/);
     if (m) {
       return { type: "aui", aui: m[1], detail: m[2] || "" };
+    }
+    m = u.pathname.match(/\/semantic-network\/([^/]+)\/TUI\/([^/]+)\/?$/);
+    if (m) {
+      return { type: "semanticType", release: m[1], tui: m[2] };
     }
     m = u.pathname.match(/\/semantic-network\/semantic-types\/([^/]+)\/?$/);
     if (m) {
@@ -568,12 +580,12 @@ function navigateToUmlsUrl(url, key) {
       modalCurrentData.returnIdType = "concept";
       fetchConceptDetails(parsed.cui, detail !== undefined ? detail : key.toLowerCase());
     } else if (parsed.type === "semanticType") {
-      fetchSemanticType(parsed.tui, { release: DEFAULT_SEMANTIC_NETWORK_RELEASE });
       modalCurrentData.sab = null;
       modalCurrentData.ui = parsed.tui;
       modalCurrentData.name = null;
       modalCurrentData.uri = null;
       modalCurrentData.returnIdType = "semanticType";
+      fetchSemanticType(parsed.tui, { release: parsed.release || DEFAULT_SEMANTIC_NETWORK_RELEASE });
     }
   } else {
     fetchRelatedDetail(url, key.toLowerCase());
@@ -1397,6 +1409,7 @@ async function fetchSemanticType(tui, options = {}) {
   scrollRecentRequestIntoView();
   renderConceptSummary(null);
   const { skipPushState = false, release = DEFAULT_SEMANTIC_NETWORK_RELEASE } = options;
+  modalCurrentData.returnIdType = "semanticType";
   const apiKey = document.getElementById("api-key").value.trim();
   if (!apiKey) {
     alert("Please enter an API key first.");
@@ -1543,6 +1556,7 @@ window.addEventListener("DOMContentLoaded", function () {
     let relatedId = params.get("relatedId") || hashParams.relatedId;
     let sab = params.get("sab") || hashParams.sab;
     let tui = params.get("tui") || hashParams.tui;
+    let semanticRelease = params.get("semanticRelease") || hashParams.semanticRelease;
 
     if (apiKey) {
       document.getElementById("api-key").value = apiKey;
@@ -1612,14 +1626,24 @@ window.addEventListener("DOMContentLoaded", function () {
       modalCurrentData.returnIdType = "aui";
       fetchAuiDetails(aui, "", { skipPushState: fromPopState });
     } else if (tui) {
-      fetchSemanticType(tui, { skipPushState: fromPopState, release: DEFAULT_SEMANTIC_NETWORK_RELEASE });
-      let fullUrl;
-      if (sab) {
-        fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${relatedId}`;
-      } else {
-        fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${relatedId}`;
+      modalCurrentData.sab = null;
+      modalCurrentData.ui = tui;
+      modalCurrentData.name = null;
+      modalCurrentData.uri = null;
+      modalCurrentData.returnIdType = "semanticType";
+      fetchSemanticType(tui, {
+        skipPushState: fromPopState,
+        release: semanticRelease || DEFAULT_SEMANTIC_NETWORK_RELEASE
+      });
+      if (related && relatedId) {
+        let fullUrl;
+        if (sab) {
+          fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${relatedId}`;
+        } else {
+          fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${relatedId}`;
+        }
+        fetchRelatedDetail(fullUrl, related, sab, { skipPushState: fromPopState });
       }
-      fetchRelatedDetail(fullUrl, related, sab, { skipPushState: fromPopState });
     } else if (inputType === "sourceUi" && searchType === "exact" && searchString) {
       if (hashParams.searchRelease) {
         searchRelease = hashParams.searchRelease;
