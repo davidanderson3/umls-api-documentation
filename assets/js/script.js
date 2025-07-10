@@ -549,6 +549,12 @@ function navigateToUmlsUrl(url, key) {
       modalCurrentData.uri = null;
       modalCurrentData.returnIdType = "aui";
       fetchAuiDetails(parsed.aui, detail !== undefined ? detail : key.toLowerCase());
+    } else if (parsed.type === "concept") {
+      modalCurrentData.sab = null;
+      modalCurrentData.ui = parsed.cui;
+      modalCurrentData.uri = null;
+      modalCurrentData.returnIdType = "concept";
+      fetchConceptDetails(parsed.cui, detail !== undefined ? detail : key.toLowerCase());
     } else if (parsed.type === "semanticType") {
       fetchSemanticType(parsed.tui, { release: DEFAULT_SEMANTIC_NETWORK_RELEASE });
       modalCurrentData.sab = null;
