@@ -504,7 +504,7 @@ function navigateToUmlsUrl(url, key) {
         if (ret) {
           returnSelector.value = ret;
         } else if (inputType === "sourceUi" && searchType === "exact") {
-          returnSelector.value = "code";
+          returnSelector.value = "concept";
         }
       }
 
