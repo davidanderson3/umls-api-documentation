@@ -495,9 +495,19 @@ function navigateToUmlsUrl(url, key) {
       const queryInput = document.getElementById("query");
       const returnSelector = document.getElementById("return-id-type");
       if (queryInput) queryInput.value = parsed.params.get("string") || "";
-      if (returnSelector && parsed.params.get("returnIdType")) {
-        returnSelector.value = parsed.params.get("returnIdType");
+
+      const inputType = parsed.params.get("inputType");
+      const searchType = parsed.params.get("searchType");
+
+      if (returnSelector) {
+        const ret = parsed.params.get("returnIdType");
+        if (ret) {
+          returnSelector.value = ret;
+        } else if (inputType === "sourceUi" && searchType === "exact") {
+          returnSelector.value = "code";
+        }
       }
+
       document.querySelectorAll("#vocab-container input").forEach((cb) => {
         cb.checked = false;
       });
@@ -515,7 +525,11 @@ function navigateToUmlsUrl(url, key) {
       if (typeof window.updateVocabVisibility === "function") {
         window.updateVocabVisibility();
       }
-      searchUMLS({ release: parsed.release });
+      if (inputType === "sourceUi" && searchType === "exact") {
+        fetchCuisForCode(parsed.params.get("string"), sabs);
+      } else {
+        searchUMLS({ release: parsed.release });
+      }
     } else if (parsed.type === "aui") {
       modalCurrentData.sab = null;
       modalCurrentData.ui = parsed.aui;
