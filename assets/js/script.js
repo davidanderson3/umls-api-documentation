@@ -824,7 +824,20 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         col2.textContent = atom.name || "";
         tr.appendChild(col2);
         const col3 = document.createElement("td");
-        col3.textContent = extractCui(atom.concept) || atom.cui || "";
+        const cui = extractCui(atom.concept) || atom.cui || "";
+        col3.textContent = cui;
+        if (cui) {
+          col3.style.color = "blue";
+          col3.style.textDecoration = "underline";
+          col3.style.cursor = "pointer";
+          col3.addEventListener("click", () => {
+            modalCurrentData.sab = null;
+            modalCurrentData.ui = cui;
+            modalCurrentData.uri = null;
+            modalCurrentData.returnIdType = "concept";
+            fetchConceptDetails(cui, "");
+          });
+        }
         tr.appendChild(col3);
         infoTableBody.appendChild(tr);
       });
