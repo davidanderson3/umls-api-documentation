@@ -371,8 +371,21 @@ function updateDocLink(urlObject) {
     }
   }
 
+  const lowerParts = pathParts.map(p => p.toLowerCase());
+  if (lowerParts.includes("search")) {
+    docSection = "search";
+  } else if (pathParts.includes("CUI")) {
+    docSection = "concept";
+  } else if (pathParts.includes("AUI")) {
+    docSection = "atoms";
+  } else if (pathParts.includes("source")) {
+    docSection = "source-asserted-identifiers";
+  } else if (pathParts.includes("TUI") || pathParts.some(p => /^T\d{3}$/i.test(p))) {
+    docSection = "semantic-network";
+  }
+
   let docUrl = `https://documentation.uts.nlm.nih.gov/rest/${docSection}/index.html`;
-  if (anchorDocMap[last]) {
+  if (anchorDocMap[last] && anchorDocMap[last] === docSection) {
     docUrl += `#${last}`;
   }
 
