@@ -134,7 +134,7 @@ function renderConceptSummary(concept, detailType = "") {
       headerText += ` - ${source} code`;
     }
   }
-  if (detailType) {
+  if (detailType && detailType !== "to" && detailType !== "from") {
     headerText += ` ${detailType}`;
   }
   header.textContent = headerText.trim();
@@ -703,9 +703,12 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         ? data
         : null;
 
+    if (detailObj && detailObj.name) {
+      modalCurrentData.name = detailObj.name;
+    }
     if (detailType) {
       renderConceptSummary({
-        name: modalCurrentData.name || (detailObj && detailObj.name),
+        name: (detailObj && detailObj.name) || modalCurrentData.name,
         ui: cui,
         rootSource: modalCurrentData.sab || (detailObj && detailObj.rootSource)
       }, detailType);
@@ -1151,8 +1154,11 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
         ? data
         : null;
 
+    if (detailObj && detailObj.name) {
+      modalCurrentData.name = detailObj.name;
+    }
     renderConceptSummary({
-      name: modalCurrentData.name || (detailObj && detailObj.name),
+      name: (detailObj && detailObj.name) || modalCurrentData.name,
       ui: aui,
       rootSource: modalCurrentData.sab || (detailObj && detailObj.rootSource)
     }, detailType);
@@ -1272,8 +1278,11 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
         ? data
         : null;
 
+    if (detailObj && detailObj.name) {
+      modalCurrentData.name = detailObj.name;
+    }
     renderConceptSummary({
-      name: modalCurrentData.name || (detailObj && detailObj.name),
+      name: (detailObj && detailObj.name) || modalCurrentData.name,
       ui: modalCurrentData.ui,
       rootSource: modalCurrentData.sab || (detailObj && detailObj.rootSource)
     }, relatedType);
