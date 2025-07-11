@@ -105,7 +105,10 @@ function extractCui(concept) {
 }
 
 function isNoCode(id) {
-  return typeof id === "string" && /(?:^|\/)(NOCODE)$/i.test(id);
+  if (typeof id !== "string") return false;
+  const clean = id.trim();
+  const lastPart = clean.split("/").pop().replace(/[?#].*$/, "");
+  return lastPart.toUpperCase() === "NOCODE";
 }
 
 function renderConceptSummary(concept, detailType = "") {
