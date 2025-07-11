@@ -106,9 +106,8 @@ function extractCui(concept) {
 
 function isNoCode(id) {
   if (typeof id !== "string") return false;
-  const clean = id.trim();
-  const lastPart = clean.split("/").pop().replace(/[?#].*$/, "");
-  return lastPart.toUpperCase() === "NOCODE";
+  const cleaned = stripBaseUrl(id.trim());
+  return cleaned.toUpperCase() === "NOCODE";
 }
 
 function renderConceptSummary(concept, detailType = "") {
@@ -417,8 +416,10 @@ function updateDocLink(urlObject) {
 
 function stripBaseUrl(fullUrl) {
   if (!fullUrl) return "";
-  const parts = fullUrl.split("/");
-  let last = parts.length ? parts[parts.length - 1] : fullUrl;
+  const withoutQuery = fullUrl.replace(/[?#].*$/, "");
+  const trimmed = withoutQuery.replace(/\/+$/, "");
+  const parts = trimmed.split("/");
+  let last = parts.length ? parts[parts.length - 1] : trimmed;
   if (last === "code" && parts.length > 1) {
     last = parts[parts.length - 2];
   }
