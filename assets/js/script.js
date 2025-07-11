@@ -104,6 +104,10 @@ function extractCui(concept) {
   return "";
 }
 
+function isNoCode(id) {
+  return typeof id === "string" && /(?:^|\/)(NOCODE)$/i.test(id);
+}
+
 function renderConceptSummary(concept, detailType = "") {
   const summary = document.getElementById("concept-summary");
   if (!summary) return;
@@ -183,13 +187,14 @@ async function renderSearchResults(data, returnIdType) {
     const tr = document.createElement("tr");
 
     const uiTd = document.createElement("td");
-    uiTd.style.color = "blue";
-    uiTd.style.textDecoration = "underline";
-    uiTd.style.cursor = "pointer";
     uiTd.textContent = item.ui || "N/A";
-    uiTd.addEventListener("click", () => {
-      modalCurrentData.ui = item.ui;
-      modalCurrentData.name = item.name || null;
+    if (item.ui && !isNoCode(item.ui)) {
+      uiTd.style.color = "blue";
+      uiTd.style.textDecoration = "underline";
+      uiTd.style.cursor = "pointer";
+      uiTd.addEventListener("click", () => {
+        modalCurrentData.ui = item.ui;
+        modalCurrentData.name = item.name || null;
         if (returnIdType === "code") {
           modalCurrentData.sab = item.rootSource;
           modalCurrentData.uri = item.uri
@@ -197,12 +202,13 @@ async function renderSearchResults(data, returnIdType) {
             : null;
           modalCurrentData.returnIdType = "code";
         } else {
-        modalCurrentData.sab = null;
-        modalCurrentData.uri = null;
-        modalCurrentData.returnIdType = "concept";
-      }
-      fetchConceptDetails(item.ui, "");
-    });
+          modalCurrentData.sab = null;
+          modalCurrentData.uri = null;
+          modalCurrentData.returnIdType = "concept";
+        }
+        fetchConceptDetails(item.ui, "");
+      });
+    }
     tr.appendChild(uiTd);
 
     const nameTd = document.createElement("td");
@@ -515,6 +521,7 @@ function parseUmlsUrl(url) {
 }
 
 function navigateToUmlsUrl(url, key) {
+  if (isNoCode(url)) return;
   const parsed = parseUmlsUrl(url);
   if (parsed) {
     const detail = parsed.detail === "concept" ? "" : parsed.detail;
@@ -865,14 +872,19 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         tr.appendChild(col3);
         const col4 = document.createElement("td");
         if (atom.code) {
-          const link = document.createElement("a");
-          link.href = "#";
-          link.textContent = stripBaseUrl(atom.code);
-          link.addEventListener("click", function (e) {
-            e.preventDefault();
-            navigateToUmlsUrl(atom.code, "code");
-          });
-          col4.appendChild(link);
+          const codeText = stripBaseUrl(atom.code);
+          if (!isNoCode(codeText)) {
+            const link = document.createElement("a");
+            link.href = "#";
+            link.textContent = codeText;
+            link.addEventListener("click", function (e) {
+              e.preventDefault();
+              navigateToUmlsUrl(atom.code, "code");
+            });
+            col4.appendChild(link);
+          } else {
+            col4.textContent = codeText;
+          }
         } else {
           col4.textContent = "";
         }
@@ -967,23 +979,26 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         const tr = document.createElement("tr");
 
         const col1 = document.createElement("td");
-        col1.style.color = "blue";
-        col1.style.textDecoration = "underline";
-        col1.style.cursor = "pointer";
         const fromNameFallback = !relation.relatedFromIdName;
+        const fromId = relation.relatedFromId || modalCurrentData.ui;
+        const fromIsNoCode = isNoCode(fromId);
         col1.textContent = relation.relatedFromIdName || modalCurrentData.name || "(no relatedFromIdName)";
-        col1.addEventListener("click", function () {
-          if (fromNameFallback) {
-            fetchConceptDetails(modalCurrentData.ui, "");
-          } else {
-            const fromId = relation.relatedFromId || modalCurrentData.ui;
-            if (returnIdType === "code") {
-              fetchRelatedDetail(fromId, "from", relation.rootSource);
+        if (!fromIsNoCode || fromNameFallback) {
+          col1.style.color = "blue";
+          col1.style.textDecoration = "underline";
+          col1.style.cursor = "pointer";
+          col1.addEventListener("click", function () {
+            if (fromNameFallback) {
+              fetchConceptDetails(modalCurrentData.ui, "");
             } else {
-              fetchRelatedDetail(fromId, "from");
+              if (returnIdType === "code") {
+                fetchRelatedDetail(fromId, "from", relation.rootSource);
+              } else {
+                fetchRelatedDetail(fromId, "from");
+              }
             }
-          }
-        });
+          });
+        }
         tr.appendChild(col1);
 
         const col2 = document.createElement("td");
@@ -995,17 +1010,20 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
         tr.appendChild(col3);
 
         const col4 = document.createElement("td");
-        col4.style.color = "blue";
-        col4.style.textDecoration = "underline";
-        col4.style.cursor = "pointer";
+        const targetIsNoCode = isNoCode(relation.relatedId);
         col4.textContent = relation.relatedIdName || "(no relatedIdName)";
-        col4.addEventListener("click", function () {
-          if (returnIdType === "code") {
-            fetchRelatedDetail(relation.relatedId, "to", relation.rootSource);
-          } else {
-            fetchRelatedDetail(relation.relatedId, "to");
-          }
-        });
+        if (!targetIsNoCode) {
+          col4.style.color = "blue";
+          col4.style.textDecoration = "underline";
+          col4.style.cursor = "pointer";
+          col4.addEventListener("click", function () {
+            if (returnIdType === "code") {
+              fetchRelatedDetail(relation.relatedId, "to", relation.rootSource);
+            } else {
+              fetchRelatedDetail(relation.relatedId, "to");
+            }
+          });
+        }
         tr.appendChild(col4);
 
         const col5 = document.createElement("td");
@@ -1016,28 +1034,30 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       });
     } else if (["parents", "children", "ancestors", "descendants"].includes(detailType)) {
       tableHead.innerHTML = `<tr><th>UI</th><th>Name</th><th>Root Source</th></tr>`;
-      sortedDetails.forEach((item) => {
-        const tr = document.createElement("tr");
-        const col1 = document.createElement("td");
-        col1.style.color = "blue";
-        col1.style.textDecoration = "underline";
-        col1.style.cursor = "pointer";
-        col1.textContent = item.ui || "N/A";
-        col1.addEventListener("click", function () {
-          modalCurrentData.ui = item.ui;
-          modalCurrentData.name = item.name || null;
-          if (item.rootSource) {
-            modalCurrentData.sab = item.rootSource;
-            modalCurrentData.uri = null;
-            modalCurrentData.returnIdType = "code";
-          } else {
-            modalCurrentData.sab = null;
-            modalCurrentData.uri = null;
-            modalCurrentData.returnIdType = "concept";
+        sortedDetails.forEach((item) => {
+          const tr = document.createElement("tr");
+          const col1 = document.createElement("td");
+          col1.textContent = item.ui || "N/A";
+          if (item.ui && !isNoCode(item.ui)) {
+            col1.style.color = "blue";
+            col1.style.textDecoration = "underline";
+            col1.style.cursor = "pointer";
+            col1.addEventListener("click", function () {
+              modalCurrentData.ui = item.ui;
+              modalCurrentData.name = item.name || null;
+              if (item.rootSource) {
+                modalCurrentData.sab = item.rootSource;
+                modalCurrentData.uri = null;
+                modalCurrentData.returnIdType = "code";
+              } else {
+                modalCurrentData.sab = null;
+                modalCurrentData.uri = null;
+                modalCurrentData.returnIdType = "concept";
+              }
+              fetchConceptDetails(item.ui, "");
+            });
           }
-          fetchConceptDetails(item.ui, "");
-        });
-        tr.appendChild(col1);
+          tr.appendChild(col1);
 
         const col2 = document.createElement("td");
         col2.textContent = item.name || "N/A";
@@ -1377,18 +1397,20 @@ async function fetchCuisForCode(code, sab) {
     sortedResults.forEach(item => {
       const tr = document.createElement("tr");
       const uiTd = document.createElement("td");
-      uiTd.style.color = "blue";
-      uiTd.style.textDecoration = "underline";
-      uiTd.style.cursor = "pointer";
       uiTd.textContent = item.ui || "N/A";
-      uiTd.addEventListener("click", () => {
-        modalCurrentData.ui = item.ui;
-        modalCurrentData.name = item.name || null;
-        modalCurrentData.sab = null;
-        modalCurrentData.uri = null;
-        modalCurrentData.returnIdType = "concept";
-        fetchConceptDetails(item.ui, "");
-      });
+      if (item.ui && !isNoCode(item.ui)) {
+        uiTd.style.color = "blue";
+        uiTd.style.textDecoration = "underline";
+        uiTd.style.cursor = "pointer";
+        uiTd.addEventListener("click", () => {
+          modalCurrentData.ui = item.ui;
+          modalCurrentData.name = item.name || null;
+          modalCurrentData.sab = null;
+          modalCurrentData.uri = null;
+          modalCurrentData.returnIdType = "concept";
+          fetchConceptDetails(item.ui, "");
+        });
+      }
       tr.appendChild(uiTd);
 
       const nameTd = document.createElement("td");
