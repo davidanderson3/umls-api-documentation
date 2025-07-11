@@ -107,7 +107,9 @@ function extractCui(concept) {
 function isNoCode(id) {
   if (typeof id !== "string") return false;
   const clean = id.trim();
-  const lastPart = clean.split("/").pop().replace(/[?#].*$/, "");
+  const withoutQuery = clean.replace(/[?#].*$/, "");
+  const trimmed = withoutQuery.replace(/\/+$/, "");
+  const lastPart = trimmed.split("/").pop();
   return lastPart.toUpperCase() === "NOCODE";
 }
 
