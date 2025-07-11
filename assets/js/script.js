@@ -1585,6 +1585,21 @@ window.addEventListener("DOMContentLoaded", function () {
     }
     updateVocabVisibility();
 
+    if (related && relatedId) {
+      modalCurrentData.ui = relatedId;
+      modalCurrentData.name = null;
+      if (sab) {
+        modalCurrentData.sab = sab;
+        modalCurrentData.uri = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${relatedId}`;
+        modalCurrentData.returnIdType = "code";
+      } else {
+        modalCurrentData.sab = null;
+        modalCurrentData.uri = null;
+        modalCurrentData.returnIdType = "concept";
+      }
+      fetchRelatedDetail(relatedId, related, sab, { skipPushState: fromPopState });
+    }
+    else if (detail) {
     if (detail) {
       if (aui) {
         modalCurrentData.sab = null;
@@ -1635,15 +1650,6 @@ window.addEventListener("DOMContentLoaded", function () {
         skipPushState: fromPopState,
         release: semanticRelease || DEFAULT_SEMANTIC_NETWORK_RELEASE
       });
-      if (related && relatedId) {
-        let fullUrl;
-        if (sab) {
-          fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${relatedId}`;
-        } else {
-          fullUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${relatedId}`;
-        }
-        fetchRelatedDetail(fullUrl, related, sab, { skipPushState: fromPopState });
-      }
     } else if (inputType === "sourceUi" && searchType === "exact" && searchString) {
       if (hashParams.searchRelease) {
         searchRelease = hashParams.searchRelease;
