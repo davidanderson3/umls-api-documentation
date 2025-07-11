@@ -212,10 +212,10 @@ pre {
 
 #results-heading {
   margin: 0;
-  padding: 0;
   text-align: left;
   width: 100%;
-  padding-top: 0.5rem;
+  padding: 0.5rem;
+  border: 3px solid #000;
 }
 
 .concept-summary {
