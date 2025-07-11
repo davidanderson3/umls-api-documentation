@@ -1,85 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UMLS API Interactive</title>
     <link rel="stylesheet" href="assets/css/local-uts.css">
 </head>
+
 <body>
-<div class="umls-app">
+    <div class="umls-app">
 
-    <h1>UMLS API Interactive Documentation</h1>
-    <p>This page allows you to search the UMLS API and inspect atoms, relations, definitions, attributes, and hierarchical information for returned concepts or codes.</p>
+        <h1>UMLS API Interactive Documentation</h1>
+        <p>This page allows you to search the UMLS API and inspect atoms, relations, definitions, attributes, and
+            hierarchical information for returned concepts or codes.</p>
 
-    <div class="umls-app__container two-column">
-        <!-- Left column: search + recent -->
-        <div class="column-left">
-            <label for="query" class="umls-app__label">Try a search:</label>
-            <input type="text" id="query" class="umls-app__input" placeholder="Enter a search term" required
-                autocomplete="off">
+        <div class="umls-app__container two-column">
+            <!-- Left column: search + recent -->
+            <div class="column-left">
+                <label for="query" class="umls-app__label">Try a search:</label>
+                <input type="text" id="query" class="umls-app__input" placeholder="Enter a search term" required
+                    autocomplete="off">
 
-            <label for="return-id-type" class="umls-app__label">Return ID Type</label>
-            <select id="return-id-type" class="umls-app__select">
-                <option value="concept">Concept (default)</option>
-                <option value="code">Code</option>
-            </select>
+                <label for="return-id-type" class="umls-app__label">Return ID Type</label>
+                <select id="return-id-type" class="umls-app__select">
+                    <option value="concept">Concept (default)</option>
+                    <option value="code">Code</option>
+                </select>
 
-            <div id="vocab-container" class="umls-app__vocab-container hidden">
-                <label class="umls-app__label">Vocabularies:</label>
-                <label><input type="checkbox" value="CPT" checked> CPT</label>
-                <label><input type="checkbox" value="ICD10CM" checked> ICD10CM</label>
-                <label><input type="checkbox" value="MSH" checked> MSH</label>
-                <label><input type="checkbox" value="RXNORM" checked> RXNORM</label>
-                <label><input type="checkbox" value="SNOMEDCT_US" checked> SNOMEDCT_US</label>
+                <div id="vocab-container" class="umls-app__vocab-container hidden">
+                    <label class="umls-app__label">Vocabularies:</label>
+                    <label><input type="checkbox" value="CPT" checked> CPT</label>
+                    <label><input type="checkbox" value="ICD10CM" checked> ICD10CM</label>
+                    <label><input type="checkbox" value="MSH" checked> MSH</label>
+                    <label><input type="checkbox" value="RXNORM" checked> RXNORM</label>
+                    <label><input type="checkbox" value="SNOMEDCT_US" checked> SNOMEDCT_US</label>
+                </div>
+
+                <button class="umls-app__button" onclick="searchUMLS()">Search</button>
             </div>
 
-            <button class="umls-app__button" onclick="searchUMLS()">Search</button>
+            <!-- Right column: API key + help -->
+            <div class="column-right">
+                <label for="api-key" class="umls-app__label">API Key</label>
+                <input type="password" id="api-key" class="umls-app__input" placeholder="Enter your UMLS API key"
+                    value="ed8350de-bf3e-4a32-bcde-b37ff58eac60" required>
+                <p>Get your API key from <a href="https://uts.nlm.nih.gov/uts/profile" target="_blank">your UTS
+                        profile</a>.
+                </p>
+            </div>
         </div>
-
-        <!-- Right column: API key + help -->
-        <div class="column-right">
-            <label for="api-key" class="umls-app__label">API Key</label>
-            <input type="password" id="api-key" class="umls-app__input" placeholder="Enter your UMLS API key"
-                value="ed8350de-bf3e-4a32-bcde-b37ff58eac60" required>
-            <p>Get your API key from <a href="https://uts.nlm.nih.gov/uts/profile" target="_blank">your UTS profile</a>.
-            </p>
+        <div class="umls-app__recent-request" id="recent-request">
+            <strong>Most Recent Request:</strong>
+            <pre id="recent-request-output">No requests made yet...</pre>
+            <p><a id="recent-doc-link" href="https://documentation.uts.nlm.nih.gov/rest/home.html" target="_blank">API
+                    Documentation</a></p>
+        </div>
+        <!-- Results displayed full width below -->
+        <div class="umls-app__results" id="results">
+            <div class="results-inner">
+                <h2 id="results-heading" class="hidden"></h2>
+                <details id="raw-data-details" class="raw-data-details">
+                    <summary>Raw Data</summary>
+                    <pre id="output">No results yet...</pre>
+                </details>
+                <p id="search-summary" class="search-summary hidden"></p>
+                <div id="concept-summary" class="concept-summary hidden"></div>
+                <p id="no-results-message" class="hidden">No Results</p>
+                <table id="info-table" class="umls-app__table">
+                    <thead>
+                        <tr>
+                            <th>UI</th>
+                            <th>Name</th>
+                            <th id="root-source-header" style="display: none;">Root Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3">No information yet...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    <div class="umls-app__recent-request" id="recent-request">
-        <strong>Most Recent Request:</strong>
-        <pre id="recent-request-output">No requests made yet...</pre>
-        <p>Docs: <a id="recent-doc-link" href="https://documentation.uts.nlm.nih.gov/rest/home.html" target="_blank">API Documentation</a></p>
-    </div>
-    <!-- Results displayed full width below -->
-    <div class="umls-app__results" id="results">
-        <div class="results-inner">
-            <h2 id="results-heading" class="hidden"></h2>
-            <details id="raw-data-details" class="raw-data-details">
-                <summary>Raw Data</summary>
-                <pre id="output">No results yet...</pre>
-            </details>
-            <p id="search-summary" class="search-summary hidden"></p>
-            <div id="concept-summary" class="concept-summary hidden"></div>
-            <p id="no-results-message" class="hidden">No Results</p>
-            <table id="info-table" class="umls-app__table">
-            <thead>
-                <tr>
-                    <th>UI</th>
-                    <th>Name</th>
-                    <th id="root-source-header" style="display: none;">Root Source</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="3">No information yet...</td>
-                </tr>
-            </tbody>
-        </table>
-        </div>
-    </div>
-</div>
     <script src="assets/js/mrrank-data.js"></script>
     <script src="assets/js/script.js"></script>
 </body>
+
 </html>
