@@ -243,6 +243,12 @@ pre {
   border-radius: 4px;
 }
 
+/* Allow long URLs in the recent request section to wrap */
+.umls-app__recent-request pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 
 
 /* in your styles.css */
