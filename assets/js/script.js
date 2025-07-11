@@ -70,7 +70,7 @@ function sortByMRRank(arr, sabKey = 'rootSource', ttyKey = 'termType') {
     .sort((a, b) => getMRRank(b[sabKey], b[ttyKey]) - getMRRank(a[sabKey], a[ttyKey]));
 }
 
-// Sort source relations by Additional Relation Label, then Relation Label, then To Name
+  // Sort source relations by Additional Relation Label, then Relation Label, then Related Name
 function sortByAdditionalRelationLabel(arr) {
   if (!Array.isArray(arr)) return arr;
   return arr
@@ -816,10 +816,10 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       tableHead.innerHTML = `<tr><th>UI</th><th>Name</th><th>Root Source</th></tr>`;
     } else if (detailType === "relations") {
       tableHead.innerHTML = `<tr>
-          <th>From Name</th>
+          <th>Source Name</th>
           <th>Relation Label</th>
           <th>Additional Relation Label</th>
-          <th>To Name</th>
+          <th>Target Name</th>
           <th>Root Source</th>
         </tr>`;
     }
