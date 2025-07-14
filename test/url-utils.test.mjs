@@ -86,6 +86,17 @@ test('parseHash code with detail', () => {
   assert.deepStrictEqual(res, { sab: 'MSH', code: 'D012345', detail: 'relations', returnIdType: 'code' });
 });
 
+test('parseHash aui base', () => {
+  const res = setHash('#content/current/AUI/A1234567');
+  assert.strictEqual(res.aui, 'A1234567');
+  assert.strictEqual(res.detail, undefined);
+});
+
+test('parseHash aui with detail', () => {
+  const res = setHash('#content/current/AUI/A1234567/relations');
+  assert.deepStrictEqual(res, { aui: 'A1234567', detail: 'relations' });
+});
+
 test('parseHash semantic type', () => {
   const res = setHash('#semantic-network/202AB/TUI/T123');
   assert.deepStrictEqual(res, { searchRelease: '202AB', tui: 'T123' });
