@@ -70,16 +70,18 @@ window.addEventListener('DOMContentLoaded', function () {
     if (related && relatedId) {
       modalCurrentData.ui = relatedId;
       modalCurrentData.name = null;
-      if (sab) {
+      const isAui = /^A\d{7}$/i.test(relatedId);
+      if (sab && !isAui) {
         modalCurrentData.sab = sab;
         modalCurrentData.uri = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${sab}/${relatedId}`;
         modalCurrentData.returnIdType = 'code';
       } else {
         modalCurrentData.sab = null;
         modalCurrentData.uri = null;
-        modalCurrentData.returnIdType = 'concept';
+        modalCurrentData.returnIdType = isAui ? 'aui' : 'concept';
       }
-      fetchRelatedDetail(relatedId, related, sab, { skipPushState: fromPopState });
+      const rootSourceForFetch = sab && !isAui ? sab : undefined;
+      fetchRelatedDetail(relatedId, related, rootSourceForFetch, { skipPushState: fromPopState });
     } else if (detail) {
       if (aui) {
         modalCurrentData.sab = null;

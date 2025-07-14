@@ -834,12 +834,24 @@ export async function fetchRelatedDetail(apiUrl, relatedType, rootSource, option
   }
 
   // If a bare UI/code is passed in, construct the full URL
+  let isAui = /^A\d{7}$/i.test(stripBaseUrl(apiUrl));
   if (!/^https?:\/\//i.test(apiUrl)) {
-    if (rootSource) {
+    if (rootSource && !isAui) {
       apiUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/source/${rootSource}/${apiUrl}`;
+    } else if (isAui) {
+      apiUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/AUI/${apiUrl}`;
     } else {
       apiUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/CUI/${apiUrl}`;
     }
+  } else {
+    const parsed = parseUmlsUrl(apiUrl);
+    if (parsed && parsed.type === "aui") {
+      isAui = true;
+    }
+  }
+
+  if (isAui) {
+    rootSource = undefined;
   }
 
   let urlObj = new URL(apiUrl);
