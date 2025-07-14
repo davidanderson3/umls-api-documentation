@@ -1175,7 +1175,30 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
 
     infoTableBody.innerHTML = "";
 
-    if (detailObj && typeof detailObj === "object") {
+    if (detailType === "attributes") {
+      tableHead.innerHTML = `<tr><th>Name</th><th>Value</th><th>Root Source</th></tr>`;
+      let attrArray = [];
+      if (Array.isArray(data.result)) {
+        attrArray = data.result;
+      } else if (data.result && Array.isArray(data.result.results)) {
+        attrArray = data.result.results;
+      }
+      await loadMRRank();
+      const sortedAttrs = sortByMRRank(attrArray);
+      sortedAttrs.forEach((attr, index) => {
+        const tr = document.createElement("tr");
+        const col1 = document.createElement("td");
+        col1.textContent = attr.attributeName || attr.name || `(Attribute #${index + 1})`;
+        tr.appendChild(col1);
+        const col2 = document.createElement("td");
+        col2.textContent = attr.value || attr.attributeValue || "";
+        tr.appendChild(col2);
+        const col3 = document.createElement("td");
+        col3.textContent = attr.rootSource || "(no rootSource)";
+        tr.appendChild(col3);
+        infoTableBody.appendChild(tr);
+      });
+    } else if (detailObj && typeof detailObj === "object") {
       Object.keys(detailObj).forEach(key => {
         const value = detailObj[key];
         // Previously we skipped fields with a value of "NONE". Now we include them
