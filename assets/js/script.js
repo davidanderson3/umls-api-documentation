@@ -122,8 +122,13 @@ function renderConceptSummary(concept, detailType = "") {
   summary.innerHTML = "";
   const header = document.createElement("h2");
   const name = concept.name || modalCurrentData.name || "";
-  const ui = concept.ui || modalCurrentData.ui || "";
-  let headerText = name ? `${name} (${ui})` : ui;
+  let identifier;
+  if (modalCurrentData.returnIdType === "code") {
+    identifier = stripBaseUrl(modalCurrentData.uri) || modalCurrentData.ui || concept.ui || "";
+  } else {
+    identifier = concept.ui || modalCurrentData.ui || "";
+  }
+  let headerText = name ? `${name} (${identifier})` : identifier;
 
   const isAtom = modalCurrentData.returnIdType === "aui";
   if (isAtom) {
