@@ -131,6 +131,9 @@ export async function searchUMLS(options = {}) {
 }
 
 export async function fetchConceptDetails(cui, detailType = "", options = {}) {
+  if (/^A\d{7}$/i.test(cui)) {
+    return fetchAuiDetails(cui, detailType, options);
+  }
   scrollRecentRequestIntoView();
   const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
