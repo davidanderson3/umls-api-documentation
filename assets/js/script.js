@@ -685,12 +685,12 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   if (detailType) {
     renderConceptSummary({ name: modalCurrentData.name, ui: cui, rootSource: modalCurrentData.sab }, detailType);
   }
-  const loadingColspan =
-    detailType === "relations" ? 5 :
-      detailType === "definitions" ? 2 :
-        detailType === "atoms" ? 4 :
-          detailType === "atoms/preferred" ? 3 :
-            detailType ? 3 : 2;
+    const loadingColspan =
+      detailType === "relations" ? 5 :
+        detailType === "definitions" ? 2 :
+          detailType === "atoms" ? 5 :
+            detailType === "atoms/preferred" ? 3 :
+              detailType ? 3 : 2;
   infoTableBody.innerHTML = `<tr><td colspan="${loadingColspan}">Loading...</td></tr>`;
 
   try {
@@ -826,8 +826,8 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
 
     } else if (detailType === "atoms/preferred") {
       tableHead.innerHTML = `<tr><th>UI</th><th>Name</th><th>CUI</th></tr>`;
-    } else if (detailType === "atoms") {
-      tableHead.innerHTML = `<tr><th>Atom</th><th>Term Type</th><th>Root Source</th><th>Code</th></tr>`;
+      } else if (detailType === "atoms") {
+        tableHead.innerHTML = `<tr><th>AUI</th><th>Atom</th><th>Term Type</th><th>Root Source</th><th>Code</th></tr>`;
     } else if (detailType === "definitions") {
       tableHead.innerHTML = `<tr><th>Definition</th><th>Root Source</th></tr>`;
     } else if (detailType === "attributes") {
@@ -862,28 +862,44 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       sortedDetails = sortByAdditionalRelationLabel(sortedDetails);
     }
     if (!Array.isArray(sortedDetails) || sortedDetails.length === 0) {
-      const emptyColspan =
-        detailType === "relations" ? 5 :
-          detailType === "definitions" ? 2 :
-            detailType === "atoms" ? 4 :
-              detailType === "atoms/preferred" ? 3 : 3;
+        const emptyColspan =
+          detailType === "relations" ? 5 :
+            detailType === "definitions" ? 2 :
+              detailType === "atoms" ? 5 :
+                detailType === "atoms/preferred" ? 3 : 3;
       infoTableBody.innerHTML = `<tr><td colspan="${emptyColspan}">No ${detailType} found for this ${cui}.</td></tr>`;
       return;
     }
 
-    if (detailType === "atoms") {
-      sortedDetails.forEach((atom, index) => {
-        const tr = document.createElement("tr");
-        const col1 = document.createElement("td");
-        col1.textContent = atom.name || `(Atom #${index + 1})`;
-        tr.appendChild(col1);
-        const col2 = document.createElement("td");
-        col2.textContent = atom.termType || "";
-        tr.appendChild(col2);
-        const col3 = document.createElement("td");
-        col3.textContent = atom.rootSource || "(no rootSource)";
-        tr.appendChild(col3);
-        const col4 = document.createElement("td");
+      if (detailType === "atoms") {
+        sortedDetails.forEach((atom, index) => {
+          const tr = document.createElement("tr");
+
+          const colAui = document.createElement("td");
+          if (atom.ui) {
+            const link = document.createElement("a");
+            link.href = "#";
+            link.textContent = atom.ui;
+            link.addEventListener("click", function (e) {
+              e.preventDefault();
+              navigateToUmlsUrl(`https://uts-ws.nlm.nih.gov/rest/content/current/AUI/${atom.ui}`, "aui");
+            });
+            colAui.appendChild(link);
+          } else {
+            colAui.textContent = "";
+          }
+          tr.appendChild(colAui);
+
+          const col1 = document.createElement("td");
+          col1.textContent = atom.name || `(Atom #${index + 1})`;
+          tr.appendChild(col1);
+          const col2 = document.createElement("td");
+          col2.textContent = atom.termType || "";
+          tr.appendChild(col2);
+          const col3 = document.createElement("td");
+          col3.textContent = atom.rootSource || "(no rootSource)";
+          tr.appendChild(col3);
+          const col4 = document.createElement("td");
         if (atom.code) {
           const codeText = stripBaseUrl(atom.code);
           if (!isNoCode(codeText)) {
@@ -1085,11 +1101,11 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
     }
   } catch (error) {
     resultsContainer.textContent = `Error fetching ${detailType}: ${error}`;
-    const errorColspan =
-      detailType === "relations" ? 5 :
-        detailType === "definitions" ? 2 :
-          detailType === "atoms" ? 4 :
-            detailType === "atoms/preferred" ? 3 : 3;
+      const errorColspan =
+        detailType === "relations" ? 5 :
+          detailType === "definitions" ? 2 :
+            detailType === "atoms" ? 5 :
+              detailType === "atoms/preferred" ? 3 : 3;
     infoTableBody.innerHTML = `<tr><td colspan="${errorColspan}">Error loading ${detailType}.</td></tr>`;
   } finally {
     scrollRecentRequestIntoView();
@@ -1176,7 +1192,6 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
     }, detailType);
 
     infoTableBody.innerHTML = "";
-
     if (detailType === "relations") {
       tableHead.innerHTML = `<tr>
           <th>Source Name</th>
@@ -1336,6 +1351,11 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
       modalCurrentData.sab = null;
       modalCurrentData.uri = basePath;
       modalCurrentData.returnIdType = "concept";
+    } else if (parsedForModal.type === "aui") {
+      modalCurrentData.ui = parsedForModal.aui;
+      modalCurrentData.sab = null;
+      modalCurrentData.uri = null;
+      modalCurrentData.returnIdType = "aui";
     }
   }
 
