@@ -1120,6 +1120,7 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
     searchSummary.textContent = "";
     searchSummary.classList.add("hidden");
   }
+  const returnIdType = modalCurrentData.returnIdType || "aui";
 
   const baseUrl = `https://uts-ws.nlm.nih.gov/rest/content/current/AUI/${aui}` + (detailType ? `/${detailType}` : "");
   const apiUrlObj = new URL(baseUrl);
@@ -1142,7 +1143,8 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
   resultsContainer.textContent = detailType
     ? `Loading ${detailType} for ${aui}...`
     : `Loading details for ${aui}...`;
-  infoTableBody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
+  const loadingColspan = detailType === "relations" ? 5 : 2;
+  infoTableBody.innerHTML = `<tr><td colspan="${loadingColspan}">Loading...</td></tr>`;
   tableHead.innerHTML = `<tr><th>Key</th><th>Value</th></tr>`;
 
   try {
@@ -1167,13 +1169,92 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
     if (detailObj && detailObj.name) {
       modalCurrentData.name = detailObj.name;
     }
-    renderConceptSummary({
+  renderConceptSummary({
       name: (detailObj && detailObj.name) || modalCurrentData.name,
       ui: aui,
       rootSource: modalCurrentData.sab || (detailObj && detailObj.rootSource)
     }, detailType);
 
     infoTableBody.innerHTML = "";
+
+    if (detailType === "relations") {
+      tableHead.innerHTML = `<tr>
+          <th>Source Name</th>
+          <th>Relation Label</th>
+          <th>Additional Relation Label</th>
+          <th>Target Name</th>
+          <th>Root Source</th>
+        </tr>`;
+
+      let detailArray = [];
+      if (Array.isArray(data.result)) {
+        detailArray = data.result;
+      } else if (data.result && Array.isArray(data.result.results)) {
+        detailArray = data.result.results;
+      } else if (data.result && Array.isArray(data.result[detailType])) {
+        detailArray = data.result[detailType];
+      }
+
+      await loadMRRank();
+      let sortedDetails = sortByMRRank(detailArray);
+      sortedDetails = sortByAdditionalRelationLabel(sortedDetails);
+
+      if (!Array.isArray(sortedDetails) || sortedDetails.length === 0) {
+        infoTableBody.innerHTML = `<tr><td colspan="5">No relations found for this ${aui}.</td></tr>`;
+        return;
+      }
+
+      sortedDetails.forEach((relation) => {
+        const tr = document.createElement("tr");
+
+        const col1 = document.createElement("td");
+        const fromNameFallback = !relation.relatedFromIdName;
+        const fromId = relation.relatedFromId || aui;
+        const fromIsNoCode = isNoCode(fromId);
+        col1.textContent = relation.relatedFromIdName || modalCurrentData.name || "(no relatedFromIdName)";
+        if (!fromIsNoCode || fromNameFallback) {
+          col1.style.color = "blue";
+          col1.style.textDecoration = "underline";
+          col1.style.cursor = "pointer";
+          col1.addEventListener("click", function () {
+            if (fromNameFallback) {
+              fetchAuiDetails(aui, "", { skipPushState: false });
+            } else {
+              fetchRelatedDetail(fromId, "from");
+            }
+          });
+        }
+        tr.appendChild(col1);
+
+        const col2 = document.createElement("td");
+        col2.textContent = relation.relationLabel || "-";
+        tr.appendChild(col2);
+
+        const col3 = document.createElement("td");
+        col3.textContent = relation.additionalRelationLabel || "-";
+        tr.appendChild(col3);
+
+        const col4 = document.createElement("td");
+        const targetIsNoCode = isNoCode(relation.relatedId);
+        col4.textContent = relation.relatedIdName || "(no relatedIdName)";
+        if (!targetIsNoCode) {
+          col4.style.color = "blue";
+          col4.style.textDecoration = "underline";
+          col4.style.cursor = "pointer";
+          col4.addEventListener("click", function () {
+            fetchRelatedDetail(relation.relatedId, "to");
+          });
+        }
+        tr.appendChild(col4);
+
+        const col5 = document.createElement("td");
+        col5.textContent = relation.rootSource || "(no rootSource)";
+        tr.appendChild(col5);
+
+        infoTableBody.appendChild(tr);
+      });
+      return;
+    }
 
     if (detailObj && typeof detailObj === "object") {
       Object.keys(detailObj).forEach(key => {
@@ -1206,7 +1287,8 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
     }
   } catch (error) {
     resultsContainer.textContent = `Error fetching ${detailType || "details"}: ${error}`;
-    infoTableBody.innerHTML = `<tr><td colspan="2">Error loading ${detailType || "details"}.</td></tr>`;
+    const errorColspan = detailType === "relations" ? 5 : 2;
+    infoTableBody.innerHTML = `<tr><td colspan="${errorColspan}">Error loading ${detailType || "details"}.</td></tr>`;
   } finally {
     scrollRecentRequestIntoView();
   }
