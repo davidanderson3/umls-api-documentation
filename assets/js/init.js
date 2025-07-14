@@ -38,6 +38,10 @@ window.addEventListener('DOMContentLoaded', function () {
     let cui = params.get('cui') || hashParams.cui;
     let code = params.get('code') || hashParams.code;
     let aui = params.get('aui') || hashParams.aui;
+    if (!aui && /^A\d{7}$/i.test(cui || '')) {
+      aui = cui;
+      cui = null;
+    }
     let related = params.get('related') || hashParams.related;
     let relatedId = params.get('relatedId') || hashParams.relatedId;
     let sab = params.get('sab') || hashParams.sab;
