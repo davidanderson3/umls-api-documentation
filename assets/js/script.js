@@ -1234,6 +1234,29 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
   urlObj.searchParams.append("apiKey", apiKey);
   urlObj.searchParams.append("pageSize", DEFAULT_PAGE_SIZE);
 
+  // Update modalCurrentData based on the resolved URL so that headers
+  // reflect the correct UI/code when viewing related details
+  const parsedForModal = parseUmlsUrl(urlObj.href);
+  if (parsedForModal) {
+    let baseParts = urlObj.pathname.split("/");
+    if (parsedForModal.detail) {
+      baseParts.splice(-parsedForModal.detail.split("/").length, parsedForModal.detail.split("/").length);
+    }
+    const basePath = urlObj.origin + baseParts.join("/");
+
+    if (parsedForModal.type === "code") {
+      modalCurrentData.ui = parsedForModal.code;
+      modalCurrentData.sab = parsedForModal.sab;
+      modalCurrentData.uri = basePath;
+      modalCurrentData.returnIdType = "code";
+    } else if (parsedForModal.type === "concept") {
+      modalCurrentData.ui = parsedForModal.cui;
+      modalCurrentData.sab = null;
+      modalCurrentData.uri = basePath;
+      modalCurrentData.returnIdType = "concept";
+    }
+  }
+
   let displayUrlObj = new URL(urlObj);
   displayUrlObj.searchParams.set("apiKey", "***");
   document.getElementById("recent-request-output").innerHTML = colorizeUrl(displayUrlObj);
