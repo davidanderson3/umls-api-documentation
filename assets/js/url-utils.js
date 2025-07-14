@@ -100,6 +100,11 @@ export function parseHash() {
         result.code = parts[4];
         result.returnIdType = 'code';
       }
+    } else if (parts[2] === 'AUI') {
+      if (parts.length >= 4) {
+        result.aui = parts[3];
+        result.detail = parts[4];
+      }
     } else if (parts.length >= 4) {
       result.cui = parts[3];
       result.detail = parts[4];
