@@ -1254,6 +1254,11 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
       modalCurrentData.sab = null;
       modalCurrentData.uri = basePath;
       modalCurrentData.returnIdType = "concept";
+    } else if (parsedForModal.type === "aui") {
+      modalCurrentData.ui = parsedForModal.aui;
+      modalCurrentData.sab = null;
+      modalCurrentData.uri = null;
+      modalCurrentData.returnIdType = "aui";
     }
   }
 
