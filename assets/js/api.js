@@ -781,6 +781,38 @@ export async function fetchAuiDetails(aui, detailType = "", options = {}) {
         col5.textContent = relation.rootSource || "(no rootSource)";
         tr.appendChild(col5);
 
+      infoTableBody.appendChild(tr);
+    });
+      return;
+    } else if (detailType === "attributes") {
+      tableHead.innerHTML = `<tr><th>Name</th><th>Value</th><th>Root Source</th></tr>`;
+      let detailArray = [];
+      if (Array.isArray(data.result)) {
+        detailArray = data.result;
+      } else if (data.result && Array.isArray(data.result.results)) {
+        detailArray = data.result.results;
+      } else if (data.result && Array.isArray(data.result[detailType])) {
+        detailArray = data.result[detailType];
+      }
+
+      await loadMRRank();
+      let sortedDetails = sortByMRRank(detailArray);
+      if (!Array.isArray(sortedDetails) || sortedDetails.length === 0) {
+        infoTableBody.innerHTML = `<tr><td colspan="3">No attributes found for this ${aui}.</td></tr>`;
+        return;
+      }
+
+      sortedDetails.forEach((attr, index) => {
+        const tr = document.createElement("tr");
+        const col1 = document.createElement("td");
+        col1.textContent = attr.attributeName || attr.name || `(Attribute #${index + 1})`;
+        tr.appendChild(col1);
+        const col2 = document.createElement("td");
+        col2.textContent = attr.value || attr.attributeValue || "";
+        tr.appendChild(col2);
+        const col3 = document.createElement("td");
+        col3.textContent = attr.rootSource || "(no rootSource)";
+        tr.appendChild(col3);
         infoTableBody.appendChild(tr);
       });
       return;
