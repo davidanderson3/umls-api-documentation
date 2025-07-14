@@ -16,7 +16,7 @@ let mrrankData =
     : { bySab: {}, bySabTty: {} };
 
 // Initialize or fetch MRRANK data if not already loaded
-async function loadMRRank() {
+export async function loadMRRank() {
   if (loadMRRank.loaded) return;
   if (typeof window !== "undefined" && window.preloadedMRRankData) {
     mrrankData = window.preloadedMRRankData;
@@ -38,21 +38,21 @@ async function loadMRRank() {
   loadMRRank.loaded = true;
 }
 
-function scrollRecentRequestIntoView() {
+export function scrollRecentRequestIntoView() {
   const recent = document.getElementById("recent-request");
   if (recent) {
     recent.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
 
-function collapseRawDataDetails() {
+export function collapseRawDataDetails() {
   const raw = document.getElementById("raw-data-details");
   if (raw && raw.hasAttribute("open")) {
     raw.removeAttribute("open");
   }
 }
 
-function getMRRank(sab, tty) {
+export function getMRRank(sab, tty) {
   if (!sab) return -1;
   if (tty && mrrankData.bySabTty[sab] && mrrankData.bySabTty[sab][tty] !== undefined) {
     return mrrankData.bySabTty[sab][tty];
@@ -63,7 +63,7 @@ function getMRRank(sab, tty) {
   return -1;
 }
 
-function sortByMRRank(arr, sabKey = 'rootSource', ttyKey = 'termType') {
+export function sortByMRRank(arr, sabKey = 'rootSource', ttyKey = 'termType') {
   if (!Array.isArray(arr)) return arr;
   return arr
     .slice()
@@ -71,7 +71,7 @@ function sortByMRRank(arr, sabKey = 'rootSource', ttyKey = 'termType') {
 }
 
 // Sort source relations by Additional Relation Label, then Relation Label, then Related Name
-function sortByAdditionalRelationLabel(arr) {
+export function sortByAdditionalRelationLabel(arr) {
   if (!Array.isArray(arr)) return arr;
   return arr
     .slice()
@@ -92,7 +92,7 @@ function sortByAdditionalRelationLabel(arr) {
     });
 }
 
-function extractCui(concept) {
+export function extractCui(concept) {
   if (!concept) return "";
   if (typeof concept === "string") {
     const m = concept.match(/\/CUI\/([^/]+)/);
@@ -104,13 +104,13 @@ function extractCui(concept) {
   return "";
 }
 
-function isNoCode(id) {
+export function isNoCode(id) {
   if (typeof id !== "string") return false;
   const cleaned = stripBaseUrl(id.trim());
   return cleaned.toUpperCase() === "NOCODE";
 }
 
-function renderConceptSummary(concept, detailType = "") {
+export function renderConceptSummary(concept, detailType = "") {
   const summary = document.getElementById("concept-summary");
   if (!summary) return;
   if (!concept || typeof concept !== "object") {
@@ -155,7 +155,7 @@ function renderConceptSummary(concept, detailType = "") {
 
 const searchCache = {};
 
-async function renderSearchResults(data, returnIdType) {
+export async function renderSearchResults(data, returnIdType) {
   const resultsContainer = document.getElementById("output");
   const infoTableBody = document.querySelector("#info-table tbody");
   const tableHead = document.querySelector("#info-table thead");
@@ -232,7 +232,7 @@ async function renderSearchResults(data, returnIdType) {
   });
 }
 
-async function searchUMLS(options = {}) {
+export async function searchUMLS(options = {}) {
   scrollRecentRequestIntoView();
   collapseRawDataDetails();
   const { skipPushState = false, useCache = false, release } = options;
@@ -340,7 +340,7 @@ async function searchUMLS(options = {}) {
   }
 }
 
-function colorizeUrl(urlObject) {
+export function colorizeUrl(urlObject) {
   const base = urlObject.origin + urlObject.pathname;
   let colorized = `<span style="color:blue">${base}</span>`;
   const params = [];
@@ -357,7 +357,7 @@ function colorizeUrl(urlObject) {
   return colorized;
 }
 
-function updateLocationHash(urlObject) {
+export function updateLocationHash(urlObject) {
   if (!urlObject || !urlObject.pathname) return;
   const cleanPath = urlObject.pathname.replace(/^\/rest\/?/, "");
   const newUrl = new URL(window.location.href);
@@ -366,7 +366,7 @@ function updateLocationHash(urlObject) {
   history.replaceState(history.state, "", newUrl);
 }
 
-function updateDocLink(urlObject) {
+export function updateDocLink(urlObject) {
   const docLink = document.getElementById("recent-doc-link");
   if (!docLink || !urlObject) return;
 
@@ -420,7 +420,7 @@ function updateDocLink(urlObject) {
 }
 
 
-function stripBaseUrl(fullUrl) {
+export function stripBaseUrl(fullUrl) {
   if (!fullUrl) return "";
   const withoutQuery = fullUrl.replace(/[?#].*$/, "");
   const trimmed = withoutQuery.replace(/\/+$/, "");
@@ -432,7 +432,7 @@ function stripBaseUrl(fullUrl) {
   return last;
 }
 
-function parseHash() {
+export function parseHash() {
   const hash = window.location.hash.replace(/^#/, "");
   if (!hash) return {};
   const [pathPart, queryPart] = hash.split("?");
@@ -496,7 +496,7 @@ function parseHash() {
   return result;
 }
 
-function parseUmlsUrl(url) {
+export function parseUmlsUrl(url) {
   try {
     const u = new URL(url, window.location.href);
     let m = u.pathname.match(/\/content\/[^/]+\/CUI\/([^/]+)(?:\/(.+))?$/);
@@ -530,7 +530,7 @@ function parseUmlsUrl(url) {
   return null;
 }
 
-function navigateToUmlsUrl(url, key) {
+export function navigateToUmlsUrl(url, key) {
   if (isNoCode(url)) return;
   const parsed = parseUmlsUrl(url);
   if (parsed) {
@@ -609,13 +609,13 @@ function navigateToUmlsUrl(url, key) {
   }
 }
 
-function getSelectedVocabularies() {
+export function getSelectedVocabularies() {
   return Array.from(document.querySelectorAll("#vocab-container input:checked")).map(
     checkbox => checkbox.value
   );
 }
 
-async function fetchConceptDetails(cui, detailType = "", options = {}) {
+export async function fetchConceptDetails(cui, detailType = "", options = {}) {
   scrollRecentRequestIntoView();
   const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
@@ -1112,7 +1112,7 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   }
 }
 
-async function fetchAuiDetails(aui, detailType = "", options = {}) {
+export async function fetchAuiDetails(aui, detailType = "", options = {}) {
   scrollRecentRequestIntoView();
   const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
@@ -1309,7 +1309,7 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
   }
 }
 
-async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {}) {
+export async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {}) {
   scrollRecentRequestIntoView();
   const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
@@ -1467,7 +1467,7 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
   }
 };
 
-async function fetchCuisForCode(code, sab) {
+export async function fetchCuisForCode(code, sab) {
   scrollRecentRequestIntoView();
   const apiKey = document.getElementById("api-key").value.trim();
   if (!apiKey) {
@@ -1571,7 +1571,7 @@ async function fetchCuisForCode(code, sab) {
   }
 }
 
-async function fetchSemanticType(tui, options = {}) {
+export async function fetchSemanticType(tui, options = {}) {
   scrollRecentRequestIntoView();
   renderConceptSummary(null);
   const { skipPushState = false, release = DEFAULT_SEMANTIC_NETWORK_RELEASE } = options;
@@ -1870,4 +1870,3 @@ window.addEventListener("DOMContentLoaded", function () {
 
 });
 
-window.searchUMLS = searchUMLS;
