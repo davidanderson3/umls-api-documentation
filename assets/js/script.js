@@ -70,7 +70,7 @@ function sortByMRRank(arr, sabKey = 'rootSource', ttyKey = 'termType') {
     .sort((a, b) => getMRRank(b[sabKey], b[ttyKey]) - getMRRank(a[sabKey], a[ttyKey]));
 }
 
-  // Sort source relations by Additional Relation Label, then Relation Label, then Related Name
+// Sort source relations by Additional Relation Label, then Relation Label, then Related Name
 function sortByAdditionalRelationLabel(arr) {
   if (!Array.isArray(arr)) return arr;
   return arr
@@ -292,9 +292,8 @@ async function searchUMLS(options = {}) {
   tableHead.innerHTML = `<tr>
         <th>UI</th>
         <th>Name</th>
-        <th id="root-source-header"${
-          returnIdType === "code" ? "" : " style=\"display: none;\""
-        }>Root Source</th>
+        <th id="root-source-header"${returnIdType === "code" ? "" : " style=\"display: none;\""
+    }>Root Source</th>
     </tr>`;
   infoTableBody.innerHTML = '<tr><td colspan="3">No information yet...</td></tr>';
   if (infoTable) infoTable.style.display = "";
@@ -681,10 +680,10 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
   }
   const loadingColspan =
     detailType === "relations" ? 5 :
-    detailType === "definitions" ? 2 :
-    detailType === "atoms" ? 4 :
-    detailType === "atoms/preferred" ? 3 :
-    detailType ? 3 : 2;
+      detailType === "definitions" ? 2 :
+        detailType === "atoms" ? 4 :
+          detailType === "atoms/preferred" ? 3 :
+            detailType ? 3 : 2;
   infoTableBody.innerHTML = `<tr><td colspan="${loadingColspan}">Loading...</td></tr>`;
 
   try {
@@ -704,8 +703,8 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       data && typeof data.result === "object" && !Array.isArray(data.result)
         ? data.result
         : typeof data === "object"
-        ? data
-        : null;
+          ? data
+          : null;
 
     if (detailObj && detailObj.name) {
       modalCurrentData.name = detailObj.name;
@@ -745,7 +744,7 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
             const tuiMatch = (st.tui || (st.uri && st.uri.match(/TUI\/([^/]+)$/)));
             const tui = tuiMatch ? (Array.isArray(tuiMatch) ? tuiMatch[1] : tuiMatch) : "";
             anchor.textContent = `${st.name || st.tui || ""}${tui ? ` (${tui})` : ""}`.trim();
-            anchor.addEventListener("click", function(e) {
+            anchor.addEventListener("click", function (e) {
               e.preventDefault();
               if (tui) fetchSemanticType(tui, { release: DEFAULT_SEMANTIC_NETWORK_RELEASE });
             });
@@ -858,9 +857,9 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
     if (!Array.isArray(sortedDetails) || sortedDetails.length === 0) {
       const emptyColspan =
         detailType === "relations" ? 5 :
-        detailType === "definitions" ? 2 :
-        detailType === "atoms" ? 4 :
-        detailType === "atoms/preferred" ? 3 : 3;
+          detailType === "definitions" ? 2 :
+            detailType === "atoms" ? 4 :
+              detailType === "atoms/preferred" ? 3 : 3;
       infoTableBody.innerHTML = `<tr><td colspan="${emptyColspan}">No ${detailType} found for this ${cui}.</td></tr>`;
       return;
     }
@@ -1041,30 +1040,30 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
       });
     } else if (["parents", "children", "ancestors", "descendants"].includes(detailType)) {
       tableHead.innerHTML = `<tr><th>UI</th><th>Name</th><th>Root Source</th></tr>`;
-        sortedDetails.forEach((item) => {
-          const tr = document.createElement("tr");
-          const col1 = document.createElement("td");
-          col1.textContent = item.ui || "N/A";
-          if (item.ui && !isNoCode(item.ui)) {
-            col1.style.color = "blue";
-            col1.style.textDecoration = "underline";
-            col1.style.cursor = "pointer";
-            col1.addEventListener("click", function () {
-              modalCurrentData.ui = item.ui;
-              modalCurrentData.name = item.name || null;
-              if (item.rootSource) {
-                modalCurrentData.sab = item.rootSource;
-                modalCurrentData.uri = null;
-                modalCurrentData.returnIdType = "code";
-              } else {
-                modalCurrentData.sab = null;
-                modalCurrentData.uri = null;
-                modalCurrentData.returnIdType = "concept";
-              }
-              fetchConceptDetails(item.ui, "");
-            });
-          }
-          tr.appendChild(col1);
+      sortedDetails.forEach((item) => {
+        const tr = document.createElement("tr");
+        const col1 = document.createElement("td");
+        col1.textContent = item.ui || "N/A";
+        if (item.ui && !isNoCode(item.ui)) {
+          col1.style.color = "blue";
+          col1.style.textDecoration = "underline";
+          col1.style.cursor = "pointer";
+          col1.addEventListener("click", function () {
+            modalCurrentData.ui = item.ui;
+            modalCurrentData.name = item.name || null;
+            if (item.rootSource) {
+              modalCurrentData.sab = item.rootSource;
+              modalCurrentData.uri = null;
+              modalCurrentData.returnIdType = "code";
+            } else {
+              modalCurrentData.sab = null;
+              modalCurrentData.uri = null;
+              modalCurrentData.returnIdType = "concept";
+            }
+            fetchConceptDetails(item.ui, "");
+          });
+        }
+        tr.appendChild(col1);
 
         const col2 = document.createElement("td");
         col2.textContent = item.name || "N/A";
@@ -1081,9 +1080,9 @@ async function fetchConceptDetails(cui, detailType = "", options = {}) {
     resultsContainer.textContent = `Error fetching ${detailType}: ${error}`;
     const errorColspan =
       detailType === "relations" ? 5 :
-      detailType === "definitions" ? 2 :
-      detailType === "atoms" ? 4 :
-      detailType === "atoms/preferred" ? 3 : 3;
+        detailType === "definitions" ? 2 :
+          detailType === "atoms" ? 4 :
+            detailType === "atoms/preferred" ? 3 : 3;
     infoTableBody.innerHTML = `<tr><td colspan="${errorColspan}">Error loading ${detailType}.</td></tr>`;
   } finally {
     scrollRecentRequestIntoView();
@@ -1155,8 +1154,8 @@ async function fetchAuiDetails(aui, detailType = "", options = {}) {
       data && typeof data.result === "object" && !Array.isArray(data.result)
         ? data.result
         : typeof data === "object"
-        ? data
-        : null;
+          ? data
+          : null;
 
     if (detailObj && detailObj.name) {
       modalCurrentData.name = detailObj.name;
@@ -1279,8 +1278,8 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
       data && typeof data.result === "object" && !Array.isArray(data.result)
         ? data.result
         : typeof data === "object"
-        ? data
-        : null;
+          ? data
+          : null;
 
     if (detailObj && detailObj.name) {
       modalCurrentData.name = detailObj.name;
@@ -1293,40 +1292,40 @@ async function fetchRelatedDetail(apiUrl, relatedType, rootSource, options = {})
 
     infoTableBody.innerHTML = "";
 
-  if (detailObj && typeof detailObj === "object") {
-    Object.keys(detailObj).forEach((key) => {
-      const value = detailObj[key];
+    if (detailObj && typeof detailObj === "object") {
+      Object.keys(detailObj).forEach((key) => {
+        const value = detailObj[key];
 
-      // Fields with a value of "NONE" are now displayed
+        // Fields with a value of "NONE" are now displayed
 
-      const tr = document.createElement("tr");
-      const tdKey = document.createElement("td");
-      tdKey.textContent = key;
-      const tdValue = document.createElement("td");
+        const tr = document.createElement("tr");
+        const tdKey = document.createElement("td");
+        tdKey.textContent = key;
+        const tdValue = document.createElement("td");
 
-      // Link URL values back into the app
-      if (typeof value === "string" && value.startsWith("http")) {
-        const link = document.createElement("a");
-        link.href = "#";
-        link.textContent = value;
-        link.addEventListener("click", function (e) {
-          e.preventDefault();
-          navigateToUmlsUrl(value, key);
-        });
-        tdValue.appendChild(link);
-      } else if (typeof value === "string") {
-        tdValue.textContent = value;
-      } else {
-        const pre = document.createElement("pre");
-        pre.textContent = JSON.stringify(value, null, 2);
-        tdValue.appendChild(pre);
-      }
+        // Link URL values back into the app
+        if (typeof value === "string" && value.startsWith("http")) {
+          const link = document.createElement("a");
+          link.href = "#";
+          link.textContent = value;
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            navigateToUmlsUrl(value, key);
+          });
+          tdValue.appendChild(link);
+        } else if (typeof value === "string") {
+          tdValue.textContent = value;
+        } else {
+          const pre = document.createElement("pre");
+          pre.textContent = JSON.stringify(value, null, 2);
+          tdValue.appendChild(pre);
+        }
 
-      tr.appendChild(tdKey);
-      tr.appendChild(tdValue);
-      infoTableBody.appendChild(tr);
-    });
-  }
+        tr.appendChild(tdKey);
+        tr.appendChild(tdValue);
+        infoTableBody.appendChild(tr);
+      });
+    }
 
   } catch (error) {
     resultsContainer.textContent = `Error fetching related ${relatedType}: ${error}`;
@@ -1500,8 +1499,8 @@ async function fetchSemanticType(tui, options = {}) {
     const detailObj = data && typeof data.result === "object" && !Array.isArray(data.result)
       ? data.result
       : typeof data === "object"
-      ? data
-      : null;
+        ? data
+        : null;
 
     if (detailObj && typeof detailObj === "object") {
       modalCurrentData.name = detailObj.name || null;
@@ -1522,7 +1521,7 @@ async function fetchSemanticType(tui, options = {}) {
           const link = document.createElement("a");
           link.href = "#";
           link.textContent = value;
-          link.addEventListener("click", function(e) {
+          link.addEventListener("click", function (e) {
             e.preventDefault();
             navigateToUmlsUrl(value, key);
           });
@@ -1633,9 +1632,7 @@ window.addEventListener("DOMContentLoaded", function () {
         modalCurrentData.returnIdType = "concept";
       }
       fetchRelatedDetail(relatedId, related, sab, { skipPushState: fromPopState });
-    }
-    else if (detail) {
-    if (detail) {
+    } else if (detail) {
       if (aui) {
         modalCurrentData.sab = null;
         modalCurrentData.ui = aui;
@@ -1656,7 +1653,10 @@ window.addEventListener("DOMContentLoaded", function () {
       if (!aui) {
         fetchConceptDetails(code || cui, detail, { skipPushState: fromPopState });
       }
-    } else if ((returnSelector.value === "code" && code && sab) || (returnSelector.value !== "code" && cui)) {
+    } else if (
+      (returnSelector.value === "code" && code && sab) ||
+      (returnSelector.value !== "code" && cui)
+    ) {
       if (returnSelector.value === "code") {
         modalCurrentData.sab = sab;
         modalCurrentData.ui = code;
@@ -1691,9 +1691,14 @@ window.addEventListener("DOMContentLoaded", function () {
       }
       fetchCuisForCode(searchString, sab);
     } else if (searchString) {
-      searchUMLS({ skipPushState: fromPopState, useCache: fromPopState, release: hashParams.searchRelease });
+      searchUMLS({
+        skipPushState: fromPopState,
+        useCache: fromPopState,
+        release: hashParams.searchRelease
+      });
     }
   }
+
 
   // Helper to toggle visibility
   function updateVocabVisibility() {
@@ -1732,3 +1737,5 @@ window.addEventListener("DOMContentLoaded", function () {
 
 
 });
+
+window.searchUMLS = searchUMLS;
