@@ -23,7 +23,7 @@ function collapseRawDataDetails() {
 
 const searchCache = {};
 export async function searchUMLS(options = {}) {
-  scrollRecentRequestIntoView();
+  // Intentionally avoid scrolling for search actions
   collapseRawDataDetails();
   const { skipPushState = false, useCache = false, release } = options;
   searchRelease = release || "current";
@@ -126,7 +126,7 @@ export async function searchUMLS(options = {}) {
     resultsContainer.textContent = "Error fetching data: " + error;
     infoTableBody.innerHTML = '<tr><td colspan="3">Error loading data.</td></tr>';
   } finally {
-    scrollRecentRequestIntoView();
+    // Do not scroll after search operations to preserve user position
   }
 }
 
