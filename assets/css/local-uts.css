@@ -69,6 +69,16 @@ pre {
   box-sizing: border-box;
 }
 
+/* Intro paragraphs at the top */
+.umls-app > p {
+  padding: 20px;
+  margin: 0 0 1rem 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .umls-app__form {
   max-width: 400px;
   margin: 0 auto;
