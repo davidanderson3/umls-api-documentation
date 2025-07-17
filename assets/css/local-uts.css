@@ -70,8 +70,8 @@ pre {
 }
 
 /* Intro paragraphs at the top */
-.umls-app__container:not(.two-column) p {
-  padding: 20px;
+.umls-app__container:not(.two-column) {
+  padding: 10px;
   margin: 0 0 1rem 0;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -225,27 +225,31 @@ pre {
 
 
 .raw-data-details {
-  margin: 0.5rem 0;
   padding: 0.5rem 0;
   width: 100%;
+  font-size: 1.2em;
 }
+
 /* Add spacing around the Raw Data summary text */
-.raw-data-details > summary {
+.raw-data-details>summary {
   padding: 0.5rem 0;
 }
 
 #results-heading {
   margin: 0;
   text-align: left;
-  width: 100%;
+  width: 95%;
   padding: 0.5rem;
   border: 3px solid #000;
 }
 
 .concept-summary {
-  margin: 0;
-  padding: 0;
+  margin: 0px 10px 10px 0px;
+  padding: 0.5rem;
+  border: 3px solid #000;
+  width: 95%;
 }
+
 .concept-summary h2 {
   margin-top: 0;
   font-size: 1.2em;
@@ -361,8 +365,8 @@ pre {
 }
 
 /* Responsive adjustments */
-  @media (max-width: 600px) {
-    .umls-app__container.two-column {
-      grid-template-columns: 1fr;
-    }
+@media (max-width: 600px) {
+  .umls-app__container.two-column {
+    grid-template-columns: 1fr;
   }
+}
