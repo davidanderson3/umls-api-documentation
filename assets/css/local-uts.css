@@ -209,6 +209,10 @@ pre {
   padding: 5px 0;
   width: 100%;
 }
+/* Add spacing around the Raw Data summary text */
+.raw-data-details > summary {
+  padding: 4px 0;
+}
 
 #results-heading {
   margin: 0;
