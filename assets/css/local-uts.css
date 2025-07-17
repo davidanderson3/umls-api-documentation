@@ -215,13 +215,13 @@ pre {
 
 
 .raw-data-details {
-  margin: 0;
-  padding: 5px 0;
+  margin: 0.5rem 0;
+  padding: 0.5rem 0;
   width: 100%;
 }
 /* Add spacing around the Raw Data summary text */
 .raw-data-details > summary {
-  padding: 4px 0;
+  padding: 0.5rem 0;
 }
 
 #results-heading {
