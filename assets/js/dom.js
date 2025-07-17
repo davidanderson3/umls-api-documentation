@@ -25,6 +25,8 @@ export function renderConceptSummary(concept, detailType = '') {
     headerText += ' Atom';
   } else if (modalCurrentData.returnIdType === 'semanticType') {
     headerText += ' - Semantic Type';
+  } else if (modalCurrentData.returnIdType === 'concept') {
+    headerText += ' - UMLS Concept';
   } else {
     const source = concept.rootSource || modalCurrentData.sab;
     if (source) {
