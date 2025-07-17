@@ -70,7 +70,7 @@ pre {
 }
 
 /* Intro paragraphs at the top */
-.umls-app > p {
+.umls-app__container:not(.two-column) p {
   padding: 20px;
   margin: 0 0 1rem 0;
   border: 1px solid #ddd;
