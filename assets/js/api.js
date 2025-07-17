@@ -7,6 +7,15 @@ let searchRelease = 'current';
 export function setSearchRelease(rel) { searchRelease = rel; }
 export function getSearchRelease() { return searchRelease; }
 
+let activeController = null;
+function startRequest() {
+  if (activeController) {
+    activeController.abort();
+  }
+  activeController = new AbortController();
+  return activeController.signal;
+}
+
 function scrollRecentRequestIntoView() {
   const recent = document.getElementById('recent-request');
   if (recent) {
@@ -115,14 +124,17 @@ export async function searchUMLS(options = {}) {
   }
 
   try {
+    const signal = startRequest();
     const response = await fetch(url, {
       method: "GET",
-      headers: { Accept: "application/json" }
+      headers: { Accept: "application/json" },
+      signal
     });
     const data = await response.json();
     searchCache[cacheKey] = data;
     await renderSearchResults(data, returnIdType);
   } catch (error) {
+    if (error.name === 'AbortError') return;
     resultsContainer.textContent = "Error fetching data: " + error;
     infoTableBody.innerHTML = '<tr><td colspan="3">Error loading data.</td></tr>';
   } finally {
@@ -212,9 +224,11 @@ export async function fetchConceptDetails(cui, detailType = "", options = {}) {
   infoTableBody.innerHTML = `<tr><td colspan="${loadingColspan}">Loading...</td></tr>`;
 
   try {
+    const signal = startRequest();
     const response = await fetch(apiUrlObj, {
       method: "GET",
-      headers: { Accept: "application/json" }
+      headers: { Accept: "application/json" },
+      signal
     });
     if (!response.ok) {
       const message = await response.text().catch(() => "");
@@ -618,6 +632,7 @@ export async function fetchConceptDetails(cui, detailType = "", options = {}) {
       });
     }
   } catch (error) {
+    if (error.name === 'AbortError') return;
     resultsContainer.textContent = `Error fetching ${detailType}: ${error}`;
       const errorColspan =
         detailType === "relations" ? 5 :
@@ -851,6 +866,7 @@ export async function fetchAuiDetails(aui, detailType = "", options = {}) {
       });
     }
   } catch (error) {
+    if (error.name === 'AbortError') return;
     resultsContainer.textContent = `Error fetching ${detailType || "details"}: ${error}`;
     const errorColspan = detailType === "relations" ? 5 : 2;
     infoTableBody.innerHTML = `<tr><td colspan="${errorColspan}">Error loading ${detailType || "details"}.</td></tr>`;
@@ -957,9 +973,11 @@ export async function fetchRelatedDetail(apiUrl, relatedType, rootSource, option
   tableHead.innerHTML = `<tr><th>Key</th><th>Value</th></tr>`;
 
   try {
+    const signal = startRequest();
     const response = await fetch(urlObj, {
       method: "GET",
-      headers: { Accept: "application/json" }
+      headers: { Accept: "application/json" },
+      signal
     });
     if (!response.ok) {
       const message = await response.text().catch(() => "");
@@ -1022,6 +1040,7 @@ export async function fetchRelatedDetail(apiUrl, relatedType, rootSource, option
     }
 
   } catch (error) {
+    if (error.name === 'AbortError') return;
     resultsContainer.textContent = `Error fetching related ${relatedType}: ${error}`;
     infoTableBody.innerHTML = `<tr><td colspan="2">Error loading related ${relatedType}.</td></tr>`;
   } finally {
@@ -1087,7 +1106,8 @@ export async function fetchCuisForCode(code, sab) {
   if (noResultsMessage) noResultsMessage.classList.add("hidden");
 
   try {
-    const response = await fetch(url, { method: "GET", headers: { Accept: "application/json" } });
+    const signal = startRequest();
+    const response = await fetch(url, { method: "GET", headers: { Accept: "application/json" }, signal });
     const data = await response.json();
     resultsContainer.textContent = JSON.stringify(data, null, 2);
 
@@ -1126,6 +1146,7 @@ export async function fetchCuisForCode(code, sab) {
       infoTableBody.appendChild(tr);
     });
   } catch (error) {
+    if (error.name === 'AbortError') return;
     resultsContainer.textContent = `Error fetching CUIs: ${error}`;
     infoTableBody.innerHTML = '<tr><td colspan="2">Error loading CUIs.</td></tr>';
   } finally {
@@ -1182,7 +1203,8 @@ export async function fetchSemanticType(tui, options = {}) {
   tableHead.innerHTML = `<tr><th>Key</th><th>Value</th></tr>`;
 
   try {
-    const response = await fetch(apiUrlObj, { method: "GET", headers: { Accept: "application/json" } });
+    const signal = startRequest();
+    const response = await fetch(apiUrlObj, { method: "GET", headers: { Accept: "application/json" }, signal });
     if (!response.ok) {
       const message = await response.text().catch(() => "");
       throw new Error(`HTTP ${response.status}: ${message}`);
@@ -1233,6 +1255,7 @@ export async function fetchSemanticType(tui, options = {}) {
       });
     }
   } catch (error) {
+    if (error.name === 'AbortError') return;
     resultsContainer.textContent = `Error fetching semantic type: ${error}`;
     infoTableBody.innerHTML = '<tr><td colspan="2">Error loading semantic type.</td></tr>';
   } finally {
