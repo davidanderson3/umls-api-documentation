@@ -19,24 +19,28 @@ export function renderConceptSummary(concept, detailType = '') {
   } else {
     identifier = concept.ui || modalCurrentData.ui || '';
   }
-  let headerText = name ? `${name} (${identifier})` : identifier;
+  const lines = [];
+  if (name) lines.push(name);
+  if (identifier) lines.push(identifier);
+  let details = '';
   const isAtom = modalCurrentData.returnIdType === 'aui';
   if (isAtom) {
-    headerText += ' Atom';
+    details = 'Atom';
   } else if (modalCurrentData.returnIdType === 'semanticType') {
-    headerText += ' - Semantic Type';
+    details = 'Semantic Type';
   } else if (modalCurrentData.returnIdType === 'concept') {
-    headerText += ' - UMLS Concept';
+    details = 'UMLS Concept';
   } else {
     const source = concept.rootSource || modalCurrentData.sab;
     if (source) {
-      headerText += ` - ${source} code`;
+      details = `${source} code`;
     }
   }
   if (detailType && detailType !== 'to' && detailType !== 'from') {
-    headerText += ` ${detailType}`;
+    details = details ? `${details} ${detailType}` : detailType;
   }
-  header.textContent = headerText.trim();
+  if (details) lines.push(details);
+  header.innerHTML = lines.map(l => l.trim()).join('<br>');
   summary.appendChild(header);
   summary.classList.remove('hidden');
 }
