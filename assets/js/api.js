@@ -834,6 +834,60 @@ export async function fetchAuiDetails(aui, detailType = "", options = {}) {
         infoTableBody.appendChild(tr);
       });
       return;
+    } else if (["parents", "children", "ancestors", "descendants"].includes(detailType)) {
+      tableHead.innerHTML = `<tr><th>UI</th><th>Name</th><th>Root Source</th></tr>`;
+      let detailArray = [];
+      if (Array.isArray(data.result)) {
+        detailArray = data.result;
+      } else if (data.result && Array.isArray(data.result.results)) {
+        detailArray = data.result.results;
+      } else if (data.result && Array.isArray(data.result[detailType])) {
+        detailArray = data.result[detailType];
+      }
+
+      await loadMRRank();
+      let sortedDetails = sortByMRRank(detailArray);
+      if (!Array.isArray(sortedDetails) || sortedDetails.length === 0) {
+        infoTableBody.innerHTML = `<tr><td colspan="3">No ${detailType} found for this ${aui}.</td></tr>`;
+        return;
+      }
+
+      sortedDetails.forEach((item) => {
+        const tr = document.createElement("tr");
+        const col1 = document.createElement("td");
+        col1.textContent = item.ui || "N/A";
+        if (item.ui && !isNoCode(item.ui)) {
+          col1.style.color = "blue";
+          col1.style.textDecoration = "underline";
+          col1.style.cursor = "pointer";
+          col1.addEventListener("click", function () {
+            modalCurrentData.ui = item.ui;
+            modalCurrentData.name = item.name || null;
+            if (item.rootSource) {
+              modalCurrentData.sab = item.rootSource;
+              modalCurrentData.uri = null;
+              modalCurrentData.returnIdType = "code";
+            } else {
+              modalCurrentData.sab = null;
+              modalCurrentData.uri = null;
+              modalCurrentData.returnIdType = "concept";
+            }
+            fetchConceptDetails(item.ui, "");
+          });
+        }
+        tr.appendChild(col1);
+
+        const col2 = document.createElement("td");
+        col2.textContent = item.name || "N/A";
+        tr.appendChild(col2);
+
+        const col3 = document.createElement("td");
+        col3.textContent = item.rootSource || "(no rootSource)";
+        tr.appendChild(col3);
+
+        infoTableBody.appendChild(tr);
+      });
+      return;
     }
 
     if (detailObj && typeof detailObj === "object") {
