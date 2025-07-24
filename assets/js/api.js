@@ -45,6 +45,7 @@ export async function searchUMLS(options = {}) {
   const { skipPushState = false, useCache = false, release } = options;
   searchRelease = release || "current";
   const apiKey = document.getElementById("api-key").value.trim();
+  if (apiKey) localStorage.setItem('apiKey', apiKey);
   const searchString = document.getElementById("query").value.trim();
   const returnIdType = document.getElementById("return-id-type").value;
   const selectedVocabularies =
@@ -158,6 +159,7 @@ export async function fetchConceptDetails(cui, detailType = "", options = {}) {
   scrollRecentRequestIntoView();
   const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
+  if (apiKey) localStorage.setItem('apiKey', apiKey);
   const returnIdType = modalCurrentData.returnIdType ||
     document.getElementById("return-id-type").value;
   const resultsContainer = document.getElementById("output");
@@ -659,6 +661,7 @@ export async function fetchAuiDetails(aui, detailType = "", options = {}) {
   scrollRecentRequestIntoView();
   const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
+  if (apiKey) localStorage.setItem('apiKey', apiKey);
   if (!apiKey) {
     alert("Please enter an API key first.");
     return;
@@ -944,6 +947,7 @@ export async function fetchRelatedDetail(apiUrl, relatedType, rootSource, option
   scrollRecentRequestIntoView();
   const { skipPushState = false } = options;
   const apiKey = document.getElementById("api-key").value.trim();
+  if (apiKey) localStorage.setItem('apiKey', apiKey);
   if (!apiKey) {
     alert("Please enter an API key first.");
     return;
@@ -1117,6 +1121,7 @@ export async function fetchRelatedDetail(apiUrl, relatedType, rootSource, option
 export async function fetchCuisForCode(code, sab) {
   scrollRecentRequestIntoView();
   const apiKey = document.getElementById("api-key").value.trim();
+  if (apiKey) localStorage.setItem('apiKey', apiKey);
   if (!apiKey) {
     alert("Please enter an API key first.");
     return;
@@ -1227,6 +1232,7 @@ export async function fetchSemanticType(tui, options = {}) {
   const { skipPushState = false, release = DEFAULT_SEMANTIC_NETWORK_RELEASE } = options;
   modalCurrentData.returnIdType = "semanticType";
   const apiKey = document.getElementById("api-key").value.trim();
+  if (apiKey) localStorage.setItem('apiKey', apiKey);
   if (!apiKey) {
     alert("Please enter an API key first.");
     return;

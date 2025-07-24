@@ -21,7 +21,8 @@ window.addEventListener('DOMContentLoaded', function () {
   function applyUrlParams(fromPopState = false) {
     const params = new URLSearchParams(window.location.search);
     const hashParams = parseHash();
-    const apiKey = params.get('apiKey');
+    const storedKey = localStorage.getItem('apiKey');
+    const apiKey = params.get('apiKey') || storedKey;
     const searchString = params.get('string');
     let returnIdType = params.get('returnIdType') || hashParams.returnIdType;
     const sabs = params.get('sabs') || hashParams.sabs;
@@ -50,6 +51,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
     if (apiKey) {
       document.getElementById('api-key').value = apiKey;
+      localStorage.setItem('apiKey', apiKey);
     }
     if (searchString) {
       document.getElementById('query').value = searchString;
