@@ -120,3 +120,17 @@ export async function renderSearchResults(data, returnIdType) {
 export function getSelectedVocabularies() {
   return Array.from(document.querySelectorAll('#vocab-container input:checked')).map(cb => cb.value);
 }
+
+export function displayApiKeyError(message) {
+  const el = document.getElementById('api-key-error');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.remove('hidden');
+}
+
+export function hideApiKeyError() {
+  const el = document.getElementById('api-key-error');
+  if (!el) return;
+  el.textContent = '';
+  el.classList.add('hidden');
+}

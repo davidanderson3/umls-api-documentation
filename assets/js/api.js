@@ -1,6 +1,6 @@
 import { colorizeUrl, updateLocationHash, updateDocLink, stripBaseUrl, parseUmlsUrl, navigateToUmlsUrl, isNoCode, extractCui } from './url-utils.js';
 import { DEFAULT_PAGE_SIZE, DEFAULT_SEMANTIC_NETWORK_RELEASE, loadMRRank, sortByMRRank, sortByAdditionalRelationLabel } from './mrrank.js';
-import { renderSearchResults, renderConceptSummary, getSelectedVocabularies } from './dom.js';
+import { renderSearchResults, renderConceptSummary, getSelectedVocabularies, displayApiKeyError, hideApiKeyError } from './dom.js';
 
 export const modalCurrentData = { ui: null, sab: null, name: null, uri: null, returnIdType: 'concept' };
 let searchRelease = 'current';
@@ -27,6 +27,14 @@ function collapseRawDataDetails() {
   const raw = document.getElementById('raw-data-details');
   if (raw && raw.hasAttribute('open')) {
     raw.removeAttribute('open');
+  }
+}
+
+function checkForbidden(response) {
+  if (response && response.status === 403) {
+    displayApiKeyError('Invalid API key. Please enter a valid API key.');
+  } else {
+    hideApiKeyError();
   }
 }
 
@@ -130,6 +138,7 @@ export async function searchUMLS(options = {}) {
       headers: { Accept: "application/json" },
       signal
     });
+    checkForbidden(response);
     const data = await response.json();
     searchCache[cacheKey] = data;
     await renderSearchResults(data, returnIdType);
@@ -230,6 +239,7 @@ export async function fetchConceptDetails(cui, detailType = "", options = {}) {
       headers: { Accept: "application/json" },
       signal
     });
+    checkForbidden(response);
     if (!response.ok) {
       const message = await response.text().catch(() => "");
       throw new Error(`HTTP ${response.status}: ${message}`);
@@ -701,6 +711,7 @@ export async function fetchAuiDetails(aui, detailType = "", options = {}) {
       method: "GET",
       headers: { Accept: "application/json" }
     });
+    checkForbidden(response);
     if (!response.ok) {
       const message = await response.text().catch(() => "");
       throw new Error(`HTTP ${response.status}: ${message}`);
@@ -1033,6 +1044,7 @@ export async function fetchRelatedDetail(apiUrl, relatedType, rootSource, option
       headers: { Accept: "application/json" },
       signal
     });
+    checkForbidden(response);
     if (!response.ok) {
       const message = await response.text().catch(() => "");
       throw new Error(`HTTP ${response.status}: ${message}`);
@@ -1162,6 +1174,7 @@ export async function fetchCuisForCode(code, sab) {
   try {
     const signal = startRequest();
     const response = await fetch(url, { method: "GET", headers: { Accept: "application/json" }, signal });
+    checkForbidden(response);
     const data = await response.json();
     resultsContainer.textContent = JSON.stringify(data, null, 2);
 
@@ -1259,6 +1272,7 @@ export async function fetchSemanticType(tui, options = {}) {
   try {
     const signal = startRequest();
     const response = await fetch(apiUrlObj, { method: "GET", headers: { Accept: "application/json" }, signal });
+    checkForbidden(response);
     if (!response.ok) {
       const message = await response.text().catch(() => "");
       throw new Error(`HTTP ${response.status}: ${message}`);
