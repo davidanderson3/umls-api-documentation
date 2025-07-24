@@ -50,6 +50,11 @@ test('parseUmlsUrl aui with detail', () => {
   assert.deepStrictEqual(parseUmlsUrl(url), { type: 'aui', aui: 'A1234567', detail: 'attributes' });
 });
 
+test('parseUmlsUrl aui parents', () => {
+  const url = 'https://uts.nlm.nih.gov/rest/content/current/AUI/A1234567/parents';
+  assert.deepStrictEqual(parseUmlsUrl(url), { type: 'aui', aui: 'A1234567', detail: 'parents' });
+});
+
 test('parseUmlsUrl semantic type with release', () => {
   const url = 'https://uts.nlm.nih.gov/rest/semantic-network/202AB/TUI/T123';
   assert.deepStrictEqual(parseUmlsUrl(url), { type: 'semanticType', release: '202AB', tui: 'T123' });
@@ -95,6 +100,11 @@ test('parseHash aui base', () => {
 test('parseHash aui with detail', () => {
   const res = setHash('#content/current/AUI/A1234567/relations');
   assert.deepStrictEqual(res, { aui: 'A1234567', detail: 'relations' });
+});
+
+test('parseHash aui parents', () => {
+  const res = setHash('#content/current/AUI/A1234567/parents');
+  assert.deepStrictEqual(res, { aui: 'A1234567', detail: 'parents' });
 });
 
 test('parseHash semantic type', () => {
