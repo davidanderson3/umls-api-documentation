@@ -218,6 +218,12 @@ pre {
   grid-column: 1 / -1;
 }
 
+.api-key-error {
+  color: red;
+  margin: 0;
+  grid-column: 1 / -1;
+}
+
 /* Utility classes */
 .hidden {
   display: none !important;
