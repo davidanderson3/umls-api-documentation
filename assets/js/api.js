@@ -31,7 +31,7 @@ function collapseRawDataDetails() {
 }
 
 function checkForbidden(response) {
-  if (response && response.status === 403) {
+  if (response && (response.status === 403 || response.status === 401)) {
     displayApiKeyError('Invalid API key. Please enter a valid API key.');
   } else {
     hideApiKeyError();
