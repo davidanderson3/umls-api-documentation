@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=content/umls-api-interactive.html">
-  <title>Redirecting...</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMLS API Interactive</title>
+    <link rel="stylesheet" href="../assets/css/local-uts.css">
 </head>
+
 <body>
     <div class="umls-app">
 
@@ -46,10 +49,10 @@
                 <label for="api-key" class="umls-app__label">API Key</label>
                 <input type="password" id="api-key" class="umls-app__input" placeholder="Enter your UMLS API key"
                     value="API_KEY_HERE" required>
-                <p id="api-key-error" class="api-key-error hidden"></p>
                 <p>Get your API key from <a href="https://uts.nlm.nih.gov/uts/profile" target="_blank">your UTS
                         profile</a>.
                 </p>
+                <p id="api-key-error" class="api-key-error hidden"></p>
             </div>
         </div>
         <div class="umls-app__recent-request" id="recent-request">
@@ -91,7 +94,8 @@
 
         <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
     </div>
-    <script src="assets/js/mrrank-data.js"></script>
-    <script type="module" src="assets/js/main.js"></script>
+    <script src="../assets/js/mrrank-data.js"></script>
+    <script type="module" src="../assets/js/main.js"></script>
 </body>
+
 </html>
