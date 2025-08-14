@@ -671,6 +671,8 @@ export async function fetchAuiDetails(aui, detailType = "", options = {}) {
   const infoTableBody = document.querySelector("#info-table tbody");
   const recentRequestContainer = document.getElementById("recent-request-output");
   const tableHead = document.querySelector("#info-table thead");
+  const infoTable = document.getElementById("info-table");
+  if (infoTable) infoTable.style.display = "";
 
   const resultsHeading = document.getElementById("results-heading");
   if (resultsHeading) {
